@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const PRO_FEATURES = [
@@ -13,6 +14,13 @@ const PRO_FEATURES = [
 
 export default function AdminSettings() {
   const { restaurant, logout } = useAuth();
+  const stored = localStorage.getItem('theme') === 'dark';
+  const [darkMode, setDarkMode] = useState(stored);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   return (
     <div className="tab-content">
@@ -31,6 +39,21 @@ export default function AdminSettings() {
             <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>{restaurant?.email || ''}</div>
           </div>
         </div>
+      </div>
+
+      {/* Dark Mode Toggle */}
+      <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 22 }}>{darkMode ? '🌙' : '☀️'}</span>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 15 }}>Dark Mode</div>
+            <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>{darkMode ? 'On' : 'Off'}</div>
+          </div>
+        </div>
+        <label className="toggle">
+          <input type="checkbox" checked={darkMode} onChange={e => setDarkMode(e.target.checked)} />
+          <span className="slider" />
+        </label>
       </div>
 
       <div className="settings-list" style={{ marginBottom: 20 }}>
