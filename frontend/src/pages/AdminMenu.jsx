@@ -65,6 +65,12 @@ export default function AdminMenu() {
     load();
   };
 
+  const deleteCategory = async (id) => {
+    if (!confirm('Delete this category? Items in it will become uncategorized.')) return;
+    await axios.delete(`/api/menu/categories/${id}`);
+    load();
+  };
+
   const getCatName = (id) => categories.find(c => c.id === id)?.name || 'Uncategorized';
 
   return (
@@ -80,8 +86,9 @@ export default function AdminMenu() {
       {categories.length > 0 && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
           {categories.map(cat => (
-            <span key={cat.id} style={{ background: 'var(--yellow-light)', borderRadius: 16, padding: '4px 12px', fontSize: 13, fontWeight: 600 }}>
+            <span key={cat.id} style={{ background: 'var(--yellow-light)', borderRadius: 16, padding: '4px 8px 4px 12px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {cat.name}
+              <button onClick={() => deleteCategory(cat.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--gray-500)', padding: 0, lineHeight: 1 }}>×</button>
             </span>
           ))}
         </div>
