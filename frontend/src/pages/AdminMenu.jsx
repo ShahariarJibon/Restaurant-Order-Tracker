@@ -9,6 +9,7 @@ export default function AdminMenu() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', price: '', description: '', category_id: '', image: '' });
   const [catName, setCatName] = useState('');
+  const [confirmDeleteCat, setConfirmDeleteCat] = useState(null);
 
   const load = async () => {
     const [ir, cr] = await Promise.all([
@@ -66,8 +67,8 @@ export default function AdminMenu() {
   };
 
   const deleteCategory = async (id) => {
-    if (!confirm('Delete this category? Items in it will become uncategorized.')) return;
     await axios.delete(`/api/menu/categories/${id}`);
+    setConfirmDeleteCat(null);
     load();
   };
 
@@ -83,13 +84,51 @@ export default function AdminMenu() {
         <button className="btn btn-secondary btn-sm" onClick={() => setShowCatForm(true)}>+ Category</button>
       </div>
 
+      {confirmDeleteCat && <div style={{ position: 'fixed', inset: 0, zIndex: 10 }} onClick={() => setConfirmDeleteCat(null)} />}
       {categories.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, position: 'relative', zIndex: 11 }}>
           {categories.map(cat => (
-            <span key={cat.id} style={{ background: 'var(--yellow-light)', borderRadius: 16, padding: '4px 8px 4px 12px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              {cat.name}
-              <button onClick={() => deleteCategory(cat.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--gray-500)', padding: 0, lineHeight: 1 }}>×</button>
-            </span>
+            <div key={cat.id}>
+              {confirmDeleteCat === cat.id ? (
+                <div onClick={e => e.stopPropagation()} style={{
+                  background: 'var(--white)',
+                  borderRadius: 16,
+                  padding: '8px 14px',
+                  boxShadow: 'var(--shadow)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                  animation: 'slideUp 0.2s ease-out',
+                  minWidth: 160
+                }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-700)' }}>Delete "{cat.name}"?</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn btn-danger btn-sm" style={{ flex: 1, minHeight: 36, padding: '6px 12px' }} onClick={() => deleteCategory(cat.id)}>Yes</button>
+                    <button className="btn btn-outline btn-sm" style={{ flex: 1, minHeight: 36, padding: '6px 12px' }} onClick={() => setConfirmDeleteCat(null)}>No</button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteCat(cat.id)}
+                  style={{
+                    background: 'var(--yellow-light)',
+                    border: 'none',
+                    borderRadius: 16,
+                    padding: '6px 14px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--gray-900)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    fontFamily: 'inherit'
+                  }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  {cat.name}
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
