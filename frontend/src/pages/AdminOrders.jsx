@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('pending');
 
   useEffect(() => {
     const load = async () => {
@@ -41,7 +41,6 @@ export default function AdminOrders() {
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto' }}>
         {[
-          { key: 'all', label: 'All', color: '' },
           { key: 'pending', label: `Pending (${counts.pending})`, color: 'var(--yellow)' },
           { key: 'preparing', label: `Preparing (${counts.preparing})`, color: 'var(--orange)' },
           { key: 'done', label: `Done (${counts.done})`, color: 'var(--green)' },
@@ -60,7 +59,7 @@ export default function AdminOrders() {
       {filtered.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📋</div>
-          <h3>No {filter !== 'all' ? filter : ''} orders</h3>
+          <h3>No {filter} orders</h3>
           <p>Orders appear here when customers place them</p>
         </div>
       ) : (

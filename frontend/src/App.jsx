@@ -27,7 +27,7 @@ function ProtectedAdmin() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'home': return <AdminHome />;
+      case 'home': return <AdminHome onGoToSettings={() => setActiveTab('settings')} />;
       case 'orders': return <AdminOrders />;
       case 'menu': return <AdminMenu />;
       case 'tables': return <AdminTables />;

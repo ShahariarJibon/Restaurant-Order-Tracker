@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-export default function AdminHome() {
+export default function AdminHome({ onGoToSettings }) {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const { restaurant } = useAuth();
@@ -14,10 +14,21 @@ export default function AdminHome() {
 
   return (
     <div className="tab-content">
-      <div className="tab-header">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+        <button
+          onClick={onGoToSettings}
+          style={{
+            width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--orange)',
+            background: 'var(--orange-light)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: 22, fontWeight: 700, color: 'var(--orange)',
+            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit'
+          }}
+        >
+          {restaurant?.name?.[0]?.toUpperCase() || 'R'}
+        </button>
         <div>
-          <h2>Hi, {restaurant?.name?.split(' ')[0] || 'there'} 👋</h2>
-          <p>Here's your daily overview</p>
+          <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>Hi, {restaurant?.name?.split(' ')[0] || 'there'} 👋</h2>
+          <p style={{ fontSize: 14, color: 'var(--gray-500)', marginTop: 2 }}>Here's your daily overview</p>
         </div>
       </div>
 
