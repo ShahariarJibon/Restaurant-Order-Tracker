@@ -20,7 +20,6 @@ import SuperAdminSubscriptions from './pages/SuperAdminSubscriptions';
 import SuperAdminReports from './pages/SuperAdminReports';
 import SuperAdminSettings from './pages/SuperAdminSettings';
 import UpgradeToPro from './pages/UpgradeToPro';
-import AdminAnalytics from './pages/AdminAnalytics';
 
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
@@ -51,7 +50,6 @@ function ProtectedAdmin() {
       case 'orders': return <AdminOrders />;
       case 'menu': return <AdminMenu />;
       case 'tables': return <AdminTables />;
-      case 'analytics': return isPro ? <AdminAnalytics /> : <Navigate to="/" />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: return <AdminHome />;
@@ -60,7 +58,7 @@ function ProtectedAdmin() {
 
   const Layout = isDesktop ? AdminDesktopLayout : AdminMobileLayout;
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab} isPro={isPro}>
+    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
       {renderTab()}
     </Layout>
   );

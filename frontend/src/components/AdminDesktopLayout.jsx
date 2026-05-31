@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
-  Hourglass, LogOut, TrendingUp, Crown,
+  Hourglass, LogOut,
 } from './Icons';
 
 const NAV = [
@@ -27,7 +27,6 @@ function RightPanelOverview({ activeTab }) {
     orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
     menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
     tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
-    analytics: { Icon: TrendingUp, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
     settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
   };
 
@@ -47,7 +46,7 @@ function RightPanelOverview({ activeTab }) {
   );
 }
 
-export default function AdminDesktopLayout({ activeTab, onTabChange, children, isPro }) {
+export default function AdminDesktopLayout({ activeTab, onTabChange, children }) {
   const { restaurant, logout } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
   const [stats, setStats] = useState(null);
@@ -89,7 +88,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children, i
           </div>
           <div>
             <div className="sidebar-name">{restaurant?.name || 'Restaurant'}</div>
-            <div className="sidebar-plan">{isPro ? 'Pro Plan' : 'Free Plan'}</div>
+            <div className="sidebar-plan">{restaurant?.plan === 'pro' ? 'Pro Plan' : 'Free Plan'}</div>
           </div>
         </div>
 
@@ -110,16 +109,6 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children, i
               </button>
             );
           })}
-          {isPro && (
-            <button
-              className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => onTabChange('analytics')}
-            >
-              <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><TrendingUp size={18} /></span>
-              <span className="sidebar-nav-label">Analytics</span>
-              <span className="super-badge pro" style={{ fontSize: 9, padding: '1px 6px', marginLeft: 'auto' }}>PRO</span>
-            </button>
-          )}
         </nav>
 
         <div className="sidebar-footer">

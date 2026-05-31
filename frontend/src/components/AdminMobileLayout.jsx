@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, TrendingUp } from './Icons';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings } from './Icons';
 
 const TABS = [
   { key: 'home', label: 'Home', Icon: LayoutDashboard },
@@ -10,7 +10,7 @@ const TABS = [
   { key: 'settings', label: 'Settings', Icon: Settings },
 ];
 
-export default function AdminMobileLayout({ activeTab, onTabChange, children, isPro }) {
+export default function AdminMobileLayout({ activeTab, onTabChange, children }) {
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -47,15 +47,6 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children, is
             </button>
           );
         })}
-        {isPro && (
-          <button
-            className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => onTabChange('analytics')}
-          >
-            <span className="nav-icon"><TrendingUp size={20} /></span>
-            Analytics
-          </button>
-        )}
       </nav>
     </div>
   );

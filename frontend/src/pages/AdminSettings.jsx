@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 import {
   ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
-  Sun, Moon, Lock, LogOut, Star, Settings, Crown, CheckCircle,
+  Sun, Moon, Lock, LogOut, Star, Settings, Crown, CheckCircle, ArrowLeft,
 } from '../components/Icons';
+import AdminAnalytics from './AdminAnalytics';
 
 const PRO_FEATURES = [
   { Icon: ScrollText, name: 'History', desc: 'Order history with filters & export' },
@@ -25,6 +26,7 @@ export default function AdminSettings({ onGoToUpgrade }) {
   const [darkMode, setDarkMode] = useState(stored);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
   const [currency, setCurrency] = useState(getSelectedCurrency());
+  const [view, setView] = useState('settings');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
@@ -63,6 +65,20 @@ export default function AdminSettings({ onGoToUpgrade }) {
       updateCurrency(code);
     } catch {}
   };
+
+  if (view === 'analytics') {
+    return (
+      <div className="tab-content">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <button onClick={() => setView('settings')} style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontFamily: 'inherit' }}>
+            <ArrowLeft size={18} /> Back
+          </button>
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Advanced Analytics</h2>
+        </div>
+        <AdminAnalytics />
+      </div>
+    );
+  }
 
   return (
     <div className="tab-content">
@@ -130,8 +146,17 @@ export default function AdminSettings({ onGoToUpgrade }) {
         </h3>
         {PRO_FEATURES.map((feat, i) => {
           const FeatIcon = feat.Icon;
+          const isAnalytics = feat.name === 'Advanced Analytics';
           return (
-            <div key={i} className="pro-card" style={{ opacity: isPro ? 1 : 0.6, filter: isPro ? 'none' : 'grayscale(0.3)' }}>
+            <div
+              key={i}
+              className="pro-card"
+              onClick={isPro && isAnalytics ? () => setView('analytics') : undefined}
+              style={{
+                opacity: isPro ? 1 : 0.6, filter: isPro ? 'none' : 'grayscale(0.3)',
+                cursor: isPro && isAnalytics ? 'pointer' : 'default',
+              }}
+            >
               <div className="pro-card-icon">{isPro ? <CheckCircle size={20} style={{ color: 'var(--green)' }} /> : <Lock size={20} />}</div>
               <div className="pro-card-info">
                 <div className="pro-card-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FeatIcon size={16} /> {feat.name}</div>
