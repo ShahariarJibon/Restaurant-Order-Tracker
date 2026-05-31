@@ -69,8 +69,7 @@ router.put('/currency', authMiddleware, async (req, res) => {
 
 router.post('/logo', authMiddleware, upload.single('logo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const baseUrl = process.env.FRONTEND_URL || `http://localhost:${process.env.PORT || 3001}`;
-  const logoUrl = `${baseUrl}/uploads/${req.file.filename}`;
+  const logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   await execute('UPDATE restaurants SET logo = ? WHERE id = ?', [logoUrl, req.restaurant.id]);
   res.json({ success: true, logo: logoUrl });
 });
