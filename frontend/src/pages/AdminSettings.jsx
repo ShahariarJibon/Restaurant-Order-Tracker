@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
+import { CURRENCIES, getSelectedCurrency, getCurrencyInfo } from '../utils/currency';
 
 const PRO_FEATURES = [
   { icon: '📊', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
@@ -14,7 +15,7 @@ const PRO_FEATURES = [
 ];
 
 export default function AdminSettings() {
-  const { restaurant, logout } = useAuth();
+  const { restaurant, logout, updateCurrency } = useAuth();
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
@@ -37,9 +38,14 @@ export default function AdminSettings() {
     reader.readAsDataURL(file);
   };
 
-  const handleCurrencyChange = (code) => {
+  const handleCurrencyChange = async (e) => {
+    const code = e.target.value;
     setCurrency(code);
     localStorage.setItem('currency', code);
+    try {
+      await axios.put('/api/auth/currency', { currency: code });
+      updateCurrency(code);
+    } catch {}
   };
 
   return (
@@ -79,22 +85,16 @@ export default function AdminSettings() {
 
       {/* Currency */}
       <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 12 }}>Currency</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 8 }}>Currency</div>
+        <select
+          value={currency}
+          onChange={handleCurrencyChange}
+          style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)', fontWeight: 600, fontSize: 15, fontFamily: 'inherit' }}
+        >
           {CURRENCIES.map(c => (
-            <button
-              key={c.code}
-              onClick={() => handleCurrencyChange(c.code)}
-              style={{
-                padding: '8px 14px', borderRadius: 10, border: `2px solid ${currency === c.code ? 'var(--orange)' : 'var(--gray-200)'}`,
-                background: currency === c.code ? 'var(--orange-light)' : 'var(--white)',
-                color: 'var(--gray-900)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4
-              }}
-            >
-              <span>{c.flag}</span> {c.code}
-            </button>
+            <option key={c.code} value={c.code}>{c.flag} {c.code} — {c.name}</option>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className="settings-list" style={{ marginBottom: 20 }}>

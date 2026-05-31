@@ -15,7 +15,12 @@ export function AuthProvider({ children }) {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       axios.get('/api/auth/me')
-        .then(res => setRestaurant(res.data.restaurant))
+        .then(res => {
+          setRestaurant(res.data.restaurant);
+          if (res.data.restaurant.currency) {
+            localStorage.setItem('currency', res.data.restaurant.currency);
+          }
+        })
         .catch(() => { localStorage.removeItem('token'); setToken(null); })
         .finally(() => setLoading(false));
     } else {
@@ -29,6 +34,9 @@ export function AuthProvider({ children }) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
     setToken(res.data.token);
     setRestaurant(res.data.restaurant);
+    if (res.data.restaurant.currency) {
+      localStorage.setItem('currency', res.data.restaurant.currency);
+    }
     return res.data;
   };
 
@@ -48,8 +56,12 @@ export function AuthProvider({ children }) {
     setRestaurant(null);
   };
 
+  const updateCurrency = (currency) => {
+    setRestaurant(prev => prev ? { ...prev, currency } : prev);
+  };
+
   return (
-    <AuthContext.Provider value={{ restaurant, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ restaurant, token, loading, login, register, logout, updateCurrency }}>
       {children}
     </AuthContext.Provider>
   );

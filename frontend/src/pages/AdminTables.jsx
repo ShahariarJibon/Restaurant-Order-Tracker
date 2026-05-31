@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { cacheData, getCachedData } from '../utils/dataCache';
 
 const downloadQR = (imgSrc, tableNum) => {
   const img = new Image();
@@ -34,7 +35,17 @@ export default function AdminTables() {
   const [qrModal, setQrModal] = useState(null);
 
   useEffect(() => {
-    axios.get('/api/tables').then(r => setTables(r.data));
+    const load = async () => {
+      try {
+        const res = await axios.get('/api/tables');
+        setTables(res.data);
+        cacheData('tables', res.data);
+      } catch {
+        const cached = getCachedData('tables');
+        if (cached) setTables(cached);
+      }
+    };
+    load();
   }, []);
 
   const addTable = async () => {
@@ -63,7 +74,7 @@ export default function AdminTables() {
             placeholder="Number"
             value={newNum}
             onChange={e => setNewNum(e.target.value)}
-            style={{ width: 80, padding: '10px 12px' }}
+            style={{ width: 120, padding: '10px 12px' }}
           />
           <button className="btn btn-primary btn-sm" onClick={addTable}>+ Add</button>
         </div>

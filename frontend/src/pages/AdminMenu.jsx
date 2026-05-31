@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CURRENCIES, getSelectedCurrency, getCurrencyInfo, fetchRates, convertPrice, toUSD, formatPrice } from '../utils/currency';
+import { getSelectedCurrency, getCurrencyInfo, fetchRates, convertPrice, toUSD, formatPrice } from '../utils/currency';
+import { cacheData, getCachedData } from '../utils/dataCache';
 
 export default function AdminMenu() {
   const [items, setItems] = useState([]);
@@ -18,12 +19,21 @@ export default function AdminMenu() {
   useEffect(() => { fetchRates().then(setRates); }, []);
 
   const load = async () => {
-    const [ir, cr] = await Promise.all([
-      axios.get('/api/menu/items'),
-      axios.get('/api/menu/categories')
-    ]);
-    setItems(ir.data);
-    setCategories(cr.data);
+    try {
+      const [ir, cr] = await Promise.all([
+        axios.get('/api/menu/items'),
+        axios.get('/api/menu/categories')
+      ]);
+      setItems(ir.data);
+      setCategories(cr.data);
+      cacheData('menu_items', ir.data);
+      cacheData('categories', cr.data);
+    } catch {
+      const cachedItems = getCachedData('menu_items');
+      const cachedCats = getCachedData('categories');
+      if (cachedItems) setItems(cachedItems);
+      if (cachedCats) setCategories(cachedCats);
+    }
   };
 
   useEffect(() => { load(); }, []);

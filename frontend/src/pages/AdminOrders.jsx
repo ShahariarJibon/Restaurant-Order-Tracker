@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
+import { cacheData, getCachedData } from '../utils/dataCache';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -12,8 +13,14 @@ export default function AdminOrders() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await axios.get('/api/orders/admin');
-      setOrders(res.data);
+      try {
+        const res = await axios.get('/api/orders/admin');
+        setOrders(res.data);
+        cacheData('orders', res.data);
+      } catch {
+        const cached = getCachedData('orders');
+        if (cached) setOrders(cached);
+      }
     };
     load();
     const interval = setInterval(load, 5000);

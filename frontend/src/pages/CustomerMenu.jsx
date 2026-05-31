@@ -71,7 +71,7 @@ export default function CustomerMenu() {
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(!navigator.onLine);
   const [rates, setRates] = useState(null);
-  const currency = getSelectedCurrency();
+  const [currency, setCurrency] = useState(getSelectedCurrency());
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -89,7 +89,12 @@ export default function CustomerMenu() {
   useEffect(() => {
     if (restaurantId) {
       axios.get(`/api/menu/public/${restaurantId}`)
-        .then(r => setData(r.data))
+        .then(r => {
+          setData(r.data);
+          if (r.data.restaurant?.currency) {
+            setCurrency(r.data.restaurant.currency);
+          }
+        })
         .catch(() => setError('Restaurant not found'));
     }
   }, [restaurantId]);

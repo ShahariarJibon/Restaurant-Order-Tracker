@@ -13,7 +13,7 @@ export default function OrderConfirmation() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [rates, setRates] = useState(null);
-  const currency = getSelectedCurrency();
+  const [currency, setCurrency] = useState(getSelectedCurrency());
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -23,6 +23,7 @@ export default function OrderConfirmation() {
       try {
         const res = await axios.get(`/api/orders/${orderId}`);
         setOrder(res.data);
+        if (res.data.currency) setCurrency(res.data.currency);
         if (res.data.status === 'done') {
           localStorage.removeItem('lastOrderId');
           localStorage.removeItem('lastTableId');

@@ -43,8 +43,9 @@ router.get('/admin', authMiddleware, async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   const order = await queryOne(
-    `SELECT o.*, t.table_number FROM orders o
-     LEFT JOIN tables_tbl t ON o.table_id = t.id WHERE o.id = ?`,
+    `SELECT o.*, t.table_number, r.currency FROM orders o
+     LEFT JOIN tables_tbl t ON o.table_id = t.id
+     LEFT JOIN restaurants r ON o.restaurant_id = r.id WHERE o.id = ?`,
     [req.params.id]
   );
   if (!order) return res.status(404).json({ error: 'Order not found' });

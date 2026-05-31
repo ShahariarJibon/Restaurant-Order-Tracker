@@ -1,5 +1,5 @@
 const CACHE_KEY = 'currency_rates';
-const CACHE_TTL = 3600000; // 1 hour
+const CACHE_TTL = 3600000;
 
 export const CURRENCIES = [
   { code: 'BDT', symbol: '৳', name: 'Bangladeshi Taka', flag: '🇧🇩' },
@@ -19,7 +19,7 @@ export function getSelectedCurrency() {
 }
 
 export function getCurrencyInfo(code) {
-  return CURRENCIES.find(c => c.code === code) || CURRENCIES[1];
+  return CURRENCIES.find(c => c.code === code) || CURRENCIES[0];
 }
 
 export async function fetchRates() {
