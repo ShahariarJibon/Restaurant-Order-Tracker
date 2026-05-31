@@ -107,12 +107,14 @@ router.get('/stats/dashboard', authMiddleware, async (req, res) => {
   );
   const pendingOrders = await queryOne("SELECT COUNT(*)::int as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
   const totalRevenue = await queryOne('SELECT COALESCE(SUM(total),0)::float as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
+  const avgRating = await queryOne('SELECT AVG(rating) as average FROM ratings WHERE restaurant_id = ?', [req.restaurant.id]);
   res.json({
     totalOrders: totalOrders?.count || 0,
     todayOrders: todayStats?.count || 0,
     todayRevenue: todayStats?.revenue || 0,
     pendingOrders: pendingOrders?.count || 0,
-    totalRevenue: totalRevenue?.total || 0
+    totalRevenue: totalRevenue?.total || 0,
+    averageRating: avgRating?.average || 0
   });
 });
 

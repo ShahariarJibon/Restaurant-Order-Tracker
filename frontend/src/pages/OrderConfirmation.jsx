@@ -3,6 +3,8 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
+const RATING_CACHE_KEY = (tableId) => `rated_table_${tableId}`;
+
 const STEPS = [
   { key: 'pending', label: 'Order Placed' },
   { key: 'preparing', label: 'Preparing' },
@@ -95,6 +97,11 @@ export default function OrderConfirmation() {
   const [currency, setCurrency] = useState(getSelectedCurrency());
   const [tables, setTables] = useState([]);
   const [showTablePicker, setShowTablePicker] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [selectedStar, setSelectedStar] = useState(0);
+  const [submittingRating, setSubmittingRating] = useState(false);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -136,8 +143,12 @@ export default function OrderConfirmation() {
       localStorage.removeItem('lastOrderId');
       localStorage.removeItem('lastTableId');
       localStorage.removeItem('lastRestaurantId');
+      const alreadyRated = ratingSubmitted || localStorage.getItem(RATING_CACHE_KEY(tableId));
+      if (!alreadyRated && tableOrders.some(o => o.status === 'done')) {
+        setShowRating(true);
+      }
     }
-  }, [tableOrders]);
+  }, [tableOrders, tableId, ratingSubmitted]);
 
   const handleChangeTable = async (newTableId) => {
     try {
@@ -158,6 +169,31 @@ export default function OrderConfirmation() {
     if (pa !== pb) return pa - pb;
     return new Date(a.created_at) - new Date(b.created_at);
   });
+
+  const handleSubmitRating = async (star) => {
+    setSubmittingRating(true);
+    try {
+      await axios.post('/api/ratings', {
+        restaurant_id: currentOrder?.restaurant_id || tableOrders[0]?.restaurant_id,
+        table_id: tableId,
+        rating: star
+      });
+      if (tableId) localStorage.setItem(RATING_CACHE_KEY(tableId), '1');
+      setRatingSubmitted(true);
+    } catch {}
+    setShowRating(false);
+    setSubmittingRating(false);
+    setSelectedStar(0);
+    setHoveredStar(0);
+  };
+
+  const handleDismissRating = () => {
+    if (!submittingRating) {
+      setShowRating(false);
+      setSelectedStar(0);
+      setHoveredStar(0);
+    }
+  };
 
   const activeCount = tableOrders.filter(o => o.status !== 'done' && o.status !== 'cancelled').length;
   const hasCancelled = tableOrders.some(o => o.status === 'cancelled');
@@ -288,6 +324,38 @@ export default function OrderConfirmation() {
           </p>
         )}
       </div>
+
+      {showRating && (
+        <div className="modal-overlay" onClick={handleDismissRating}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{
+            maxWidth: 320, textAlign: 'center', padding: '32px 24px'
+          }}>
+            <h2 style={{ fontSize: 20, marginBottom: 4 }}>Rate Your Experience</h2>
+            <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 20 }}>
+              How was your meal today?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <button
+                  key={star}
+                  onClick={() => { if (!submittingRating) { setSelectedStar(star); handleSubmitRating(star); } }}
+                  onMouseEnter={() => setHoveredStar(star)}
+                  onMouseLeave={() => setHoveredStar(0)}
+                  style={{
+                    background: 'none', border: 'none', fontSize: 36, cursor: submittingRating ? 'default' : 'pointer',
+                    color: (hoveredStar || selectedStar) >= star ? '#FFC107' : 'var(--gray-300)',
+                    transition: 'color 0.15s', padding: '0 2px'
+                  }}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            {submittingRating && <p style={{ fontSize: 13, color: 'var(--gray-400)' }}>Submitting...</p>}
+            <p style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap a star to rate, or tap outside to dismiss</p>
+          </div>
+        </div>
+      )}
 
       {showTablePicker && (
         <div className="modal-overlay" onClick={() => setShowTablePicker(false)}>

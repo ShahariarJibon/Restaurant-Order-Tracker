@@ -95,6 +95,16 @@ export async function initDB() {
     `);
     try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT \'BDT\''); } catch {}
     try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS logo TEXT DEFAULT \'\''); } catch {}
+    try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS logo TEXT DEFAULT \'\''); } catch {}
+    try {
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS ratings (
+          id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL,
+          table_id TEXT, rating INTEGER NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch {}
     console.log('Using PostgreSQL');
   } else {
     const SQL = await initSqlJs();
@@ -113,6 +123,7 @@ export async function initDB() {
     db.run(`CREATE TABLE IF NOT EXISTS order_items (id TEXT PRIMARY KEY, order_id TEXT NOT NULL, item_name TEXT NOT NULL, quantity INTEGER NOT NULL, price REAL NOT NULL)`);
     try { db.run("ALTER TABLE restaurants ADD COLUMN currency TEXT DEFAULT 'BDT'"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN logo TEXT DEFAULT ''"); } catch {}
+    try { db.run("CREATE TABLE IF NOT EXISTS ratings (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, rating INTEGER NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     sqliteSave();
     console.log('Using SQLite');
   }
