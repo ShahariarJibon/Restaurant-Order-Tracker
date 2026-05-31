@@ -12,7 +12,7 @@ export default function AdminLogin() {
   const navigate = useNavigate();
 
   if (restaurant) {
-    navigate('/owner');
+    navigate('/');
     return null;
   }
 
@@ -22,10 +22,10 @@ export default function AdminLogin() {
     try {
       if (isRegister) {
         await register(name, email, password);
-        navigate('/owner');
+        navigate('/');
       } else {
         await login(email, password);
-        navigate('/owner');
+        navigate('/');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong');

@@ -99,8 +99,8 @@ export default function App() {
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<SuperAdminApp />} />
-        <Route path="/owner" element={<ProtectedAdmin />} />
-        <Route path="*" element={<Navigate to="/admin" />} />
+        <Route path="/" element={<ProtectedAdmin />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </AuthProvider>
   );
