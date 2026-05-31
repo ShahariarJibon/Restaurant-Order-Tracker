@@ -607,9 +607,19 @@ input:focus, select:focus, textarea:focus {
   -webkit-user-select: none;
   user-select: none;
 }
-.nav-item .nav-icon { font-size: 22px; line-height: 1; }
-.nav-item.active { color: var(--orange); font-weight: 600; }
+.nav-item .nav-icon { font-size: 22px; line-height: 1; position: relative; }
+.nav-item.active { color: var(--orange); font-weight: 700; transform: scale(1.12); }
 .nav-item:active { opacity: 0.7; }
+.nav-badge {
+  position: absolute;
+  top: -2px;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+}
 
 /* ===== ADMIN TAB CONTENT ===== */
 .tab-content {

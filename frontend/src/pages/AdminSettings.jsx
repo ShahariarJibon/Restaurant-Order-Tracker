@@ -16,11 +16,24 @@ export default function AdminSettings() {
   const { restaurant, logout } = useAuth();
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
+  const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setLogo(dataUrl);
+      localStorage.setItem('restaurant_logo', dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="tab-content">
@@ -31,9 +44,10 @@ export default function AdminSettings() {
       {/* Profile */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'var(--orange)' }}>
-            {restaurant?.name?.[0]?.toUpperCase() || 'R'}
-          </div>
+          <button onClick={() => document.getElementById('logo-input').click()} style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--orange-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'var(--orange)', cursor: 'pointer', border: '2px solid var(--orange)', overflow: 'hidden', padding: 0, flexShrink: 0 }}>
+            {logo ? <img src={logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (restaurant?.name?.[0]?.toUpperCase() || 'R')}
+          </button>
+          <input id="logo-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoChange} />
           <div>
             <div style={{ fontWeight: 700, fontSize: 16 }}>{restaurant?.name || 'Restaurant'}</div>
             <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>{restaurant?.email || ''}</div>

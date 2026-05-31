@@ -5,7 +5,14 @@ import { useAuth } from '../context/AuthContext';
 export default function AdminHome({ onGoToSettings }) {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
+  const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
   const { restaurant } = useAuth();
+
+  useEffect(() => {
+    const handler = () => setLogo(localStorage.getItem('restaurant_logo') || '');
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
 
   useEffect(() => {
     axios.get('/api/orders/stats/dashboard').then(r => setStats(r.data));
@@ -21,10 +28,10 @@ export default function AdminHome({ onGoToSettings }) {
             width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--orange)',
             background: 'var(--orange-light)', display: 'flex', alignItems: 'center',
             justifyContent: 'center', fontSize: 22, fontWeight: 700, color: 'var(--orange)',
-            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit'
+            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', overflow: 'hidden', padding: 0
           }}
         >
-          {restaurant?.name?.[0]?.toUpperCase() || 'R'}
+          {logo ? <img src={logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (restaurant?.name?.[0]?.toUpperCase() || 'R')}
         </button>
         <div>
           <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>Hi, {restaurant?.name?.split(' ')[0] || 'there'} 👋</h2>

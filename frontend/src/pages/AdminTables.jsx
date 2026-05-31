@@ -1,6 +1,33 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const downloadQR = (imgSrc, tableNum) => {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const padding = 30;
+    const textHeight = 50;
+    const size = Math.max(img.width, 220);
+    canvas.width = size + padding * 2;
+    canvas.height = size + padding * 2 + textHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const x = (canvas.width - img.width) / 2;
+    ctx.drawImage(img, x, padding, img.width, img.height);
+    ctx.fillStyle = '#222222';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan QR to view menu & order', canvas.width / 2, canvas.height - 14);
+    const link = document.createElement('a');
+    link.download = `table-${tableNum}-qr.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+  img.src = imgSrc;
+};
+
 export default function AdminTables() {
   const [tables, setTables] = useState([]);
   const [newNum, setNewNum] = useState('');
@@ -86,7 +113,8 @@ export default function AdminTables() {
               <p>Scan to view menu & order</p>
             </div>
             <div className="modal-actions">
-              <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => setQrModal(null)}>Close</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => downloadQR(qrModal.qr_code, qrModal.table_number)}>⬇ Download</button>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setQrModal(null)}>Close</button>
             </div>
           </div>
         </div>
