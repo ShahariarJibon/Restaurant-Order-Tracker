@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { Component, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminLogin from './pages/AdminLogin';
@@ -51,6 +51,23 @@ const PRO_TAB_INFO = {
   ai: { name: 'AI Features', desc: 'Smart suggestions & predictions' },
 };
 
+class ErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="admin-app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 20, textAlign: 'center' }}>
+          <h2 style={{ color: '#EF4444', marginBottom: 12 }}>Something went wrong</h2>
+          <pre style={{ fontSize: 13, color: 'var(--gray-500)', maxWidth: '100%', overflow: 'auto', padding: 16, background: '#FEE2E2', borderRadius: 8, border: '1px solid #FECACA' }}>{this.state.error?.message || 'Unknown error'}</pre>
+          <button onClick={() => { this.setState({ error: null }); window.location.reload(); }} style={{ marginTop: 16, padding: '12px 24px', borderRadius: 10, border: 'none', background: 'var(--orange)', color: 'white', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Reload Page</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
@@ -101,9 +118,11 @@ function ProtectedAdmin() {
 
   const Layout = isDesktop ? AdminDesktopLayout : AdminMobileLayout;
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-      {renderTab()}
-    </Layout>
+    <ErrorBoundary>
+      <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+        {renderTab()}
+      </Layout>
+    </ErrorBoundary>
   );
 }
 

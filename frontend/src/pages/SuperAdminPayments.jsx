@@ -142,6 +142,13 @@ export default function SuperAdminPayments() {
                       From: {p.sender_number}
                     </div>
                   )}
+                  {p.screenshot && (
+                    <div style={{ marginBottom: 10 }}>
+                      <a href={p.screenshot} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--orange)', textDecoration: 'underline' }}>
+                        <img src={p.screenshot} alt="payment screenshot" style={{ height: 60, borderRadius: 6, border: '1px solid var(--gray-200)' }} />
+                      </a>
+                    </div>
+                  )}
 
                   {p.status === 'pending' && (
                     <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>

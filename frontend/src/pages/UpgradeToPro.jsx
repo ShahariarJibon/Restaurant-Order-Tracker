@@ -31,6 +31,7 @@ export default function UpgradeToPro({ onBack }) {
   const [method, setMethod] = useState('');
   const [trxId, setTrxId] = useState('');
   const [senderNumber, setSenderNumber] = useState('');
+  const [screenshot, setScreenshot] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
   const [copied, setCopied] = useState('');
@@ -58,6 +59,7 @@ export default function UpgradeToPro({ onBack }) {
         trxId: trxId.trim(),
         senderNumber: senderNumber.trim(),
         planType,
+        screenshot: screenshot || '',
       });
       if (res.data.success) {
         setStep('status');
@@ -67,6 +69,15 @@ export default function UpgradeToPro({ onBack }) {
       alert(err.response?.data?.error || 'Submission failed. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleScreenshot = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setScreenshot(ev.target.result);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -232,9 +243,15 @@ export default function UpgradeToPro({ onBack }) {
             }}
           >
             <Upload size={20} />
-            Upload payment screenshot
-            <input type="file" accept="image/*" style={{ display: 'none' }} />
+            {screenshot ? 'Screenshot added' : 'Upload payment screenshot'}
+            <input type="file" accept="image/*" onChange={handleScreenshot} style={{ display: 'none' }} />
           </label>
+          {screenshot && (
+            <div style={{ marginTop: 8, position: 'relative', display: 'inline-block' }}>
+              <img src={screenshot} alt="screenshot" style={{ height: 80, borderRadius: 8, border: '1px solid var(--gray-200)' }} />
+              <button onClick={() => setScreenshot(null)} style={{ position: 'absolute', top: -6, right: -6, background: '#EF4444', color: 'white', border: 'none', borderRadius: '50%', width: 20, height: 20, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            </div>
+          )}
         </div>
 
         <button

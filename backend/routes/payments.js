@@ -6,7 +6,7 @@ import { authMiddleware } from '../middleware/auth.js';
 const router = Router();
 
 router.post('/submit', authMiddleware, async (req, res) => {
-  const { method, trxId, senderNumber, planType } = req.body;
+  const { method, trxId, senderNumber, planType, screenshot } = req.body;
   if (!method || !trxId || !planType) {
     return res.status(400).json({ error: 'Method, transaction ID, and plan type are required' });
   }
@@ -23,8 +23,8 @@ router.post('/submit', authMiddleware, async (req, res) => {
   const amount = planType === 'monthly' ? 499 : 5599;
   const id = uuidv4();
   await execute(
-    'INSERT INTO payments (id, restaurant_id, method, trx_id, sender_number, amount, plan_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, req.restaurant.id, method, trxId, senderNumber || '', amount, planType, 'pending']
+    'INSERT INTO payments (id, restaurant_id, method, trx_id, sender_number, amount, plan_type, status, screenshot) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, req.restaurant.id, method, trxId, senderNumber || '', amount, planType, 'pending', screenshot || '']
   );
   res.json({ success: true, payment: { id, status: 'pending', amount, planType } });
 });
