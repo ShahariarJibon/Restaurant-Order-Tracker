@@ -53,6 +53,27 @@ router.get('/:id', async (req, res) => {
   res.json(order);
 });
 
+router.put('/:id/table', async (req, res) => {
+  const { table_id } = req.body;
+  if (!table_id) return res.status(400).json({ error: 'Table ID is required' });
+  await execute('UPDATE orders SET table_id = ? WHERE id = ?', [table_id, req.params.id]);
+  const table = await queryOne('SELECT id, table_number FROM tables_tbl WHERE id = ?', [table_id]);
+  res.json({ success: true, table_number: table?.table_number || null });
+});
+
+router.get('/public/table/:tableId', async (req, res) => {
+  const orders = await queryAll(
+    `SELECT o.*, t.table_number FROM orders o
+     LEFT JOIN tables_tbl t ON o.table_id = t.id
+     WHERE o.table_id = ? AND o.status != 'done' ORDER BY o.created_at ASC`,
+    [req.params.tableId]
+  );
+  for (const order of orders) {
+    order.items = await queryAll('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+  }
+  res.json(orders);
+});
+
 router.put('/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
   if (!['pending', 'preparing', 'done'].includes(status)) {

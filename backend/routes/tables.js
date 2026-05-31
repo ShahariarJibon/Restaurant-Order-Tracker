@@ -43,4 +43,9 @@ router.delete('/:id', authMiddleware, async (req, res) => {
   res.json({ success: true });
 });
 
+router.get('/public/:restaurantId', async (req, res) => {
+  const tables = await queryAll('SELECT id, table_number FROM tables_tbl WHERE restaurant_id = ? ORDER BY table_number', [req.params.restaurantId]);
+  res.json(tables);
+});
+
 export default router;
