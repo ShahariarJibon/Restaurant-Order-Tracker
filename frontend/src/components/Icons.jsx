@@ -6,4 +6,5 @@ export {
   ScrollText, RefreshCw, ChefHat, Sparkles, Clock,
   Store, Search, Download, Crown, AlertTriangle, ChevronRight, Menu, X,
   TrendingUp, Copy, ExternalLink, MessageSquare, Save, Shield, Plus,
+  ArrowLeft, Upload, Phone, ThumbsUp, ThumbsDown,
 } from 'lucide-react';

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
-import { DollarSign, ClipboardList, Hourglass, Star } from '../components/Icons';
+import { DollarSign, ClipboardList, Hourglass, Star, Crown } from '../components/Icons';
 
 const CARD_STYLES = [
   { color: '#FF8C42', Icon: DollarSign, label: "Today's Revenue", key: 'todayRevenue', format: 'price' },
@@ -11,7 +11,7 @@ const CARD_STYLES = [
   { color: '#10B981', Icon: Star, label: 'Average Rating', key: 'averageRating', format: 'rating' },
 ];
 
-export default function AdminHome({ onGoToSettings }) {
+export default function AdminHome({ onGoToSettings, onGoToUpgrade }) {
   const [stats, setStats] = useState(null);
   const [rates, setRates] = useState(null);
   const { restaurant } = useAuth();
@@ -97,6 +97,29 @@ export default function AdminHome({ onGoToSettings }) {
           );
         })}
       </div>
+
+      {restaurant?.plan !== 'pro' && (
+        <button
+          onClick={onGoToUpgrade}
+          style={{
+            width: '100%', marginTop: 24, padding: '18px 20px', borderRadius: 16,
+            border: '2px solid #FFC107', background: 'linear-gradient(135deg, #FFFDE7 0%, #FFF8E1 100%)',
+            cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+            boxShadow: '0 4px 20px rgba(255,193,7,0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFC107', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Crown size={24} color="#333" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: '#333' }}>Upgrade to Pro</div>
+              <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>Unlock advanced features for your restaurant</div>
+            </div>
+            <div style={{ marginLeft: 'auto', fontSize: 18, color: '#FFC107' }}>›</div>
+          </div>
+        </button>
+      )}
     </div>
   );
 }

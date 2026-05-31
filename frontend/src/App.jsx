@@ -19,6 +19,7 @@ import SuperAdminPayments from './pages/SuperAdminPayments';
 import SuperAdminSubscriptions from './pages/SuperAdminSubscriptions';
 import SuperAdminReports from './pages/SuperAdminReports';
 import SuperAdminSettings from './pages/SuperAdminSettings';
+import UpgradeToPro from './pages/UpgradeToPro';
 
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
@@ -43,11 +44,12 @@ function ProtectedAdmin() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'home': return <AdminHome onGoToSettings={() => setActiveTab('settings')} />;
+      case 'home': return <AdminHome onGoToSettings={() => setActiveTab('settings')} onGoToUpgrade={() => setActiveTab('upgrade')} />;
       case 'orders': return <AdminOrders />;
       case 'menu': return <AdminMenu />;
       case 'tables': return <AdminTables />;
-      case 'settings': return <AdminSettings />;
+      case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} />;
+      case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: return <AdminHome />;
     }
   };

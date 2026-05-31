@@ -107,6 +107,17 @@ export async function initDB() {
         )
       `);
     } catch {}
+    try {
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS payments (
+          id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL,
+          method TEXT NOT NULL, trx_id TEXT NOT NULL,
+          sender_number TEXT DEFAULT '', amount REAL NOT NULL,
+          plan_type TEXT NOT NULL, status TEXT DEFAULT 'pending',
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch {}
     console.log('Using PostgreSQL');
   } else {
     const SQL = await initSqlJs();
@@ -129,6 +140,7 @@ export async function initDB() {
     try { db.run("ALTER TABLE restaurants ADD COLUMN status TEXT DEFAULT 'active'"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN plan_expiry TEXT DEFAULT ''"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS ratings (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, rating INTEGER NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
+    try { db.run("CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, method TEXT NOT NULL, trx_id TEXT NOT NULL, sender_number TEXT DEFAULT '', amount REAL NOT NULL, plan_type TEXT NOT NULL, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     sqliteSave();
     console.log('Using SQLite');
   }

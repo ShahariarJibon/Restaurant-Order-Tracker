@@ -19,7 +19,7 @@ const PRO_FEATURES = [
   { Icon: Bot, name: 'AI Features', desc: 'Smart suggestions & predictions' },
 ];
 
-export default function AdminSettings() {
+export default function AdminSettings({ onGoToUpgrade }) {
   const { restaurant, logout, updateCurrency, updateRestaurant } = useAuth();
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
@@ -141,8 +141,8 @@ export default function AdminSettings() {
           );
         })}
         {!isPro && (
-          <button className="pro-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Star size={18} /> Upgrade to Pro — Contact Support
+          <button className="pro-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={onGoToUpgrade}>
+            <Star size={18} /> Upgrade to Pro
           </button>
         )}
       </div>

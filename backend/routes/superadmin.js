@@ -101,4 +101,38 @@ router.get('/restaurants/:id', superAuth, async (req, res) => {
   res.json({ ...restaurant, totalRevenue: totalRevenue?.rev || 0, avgRating: avgRating?.avg || 0, orders });
 });
 
+// Super Admin: Payment management
+router.get('/payments', superAuth, async (req, res) => {
+  const { status } = req.query;
+  let sql = 'SELECT p.*, r.name as restaurant_name, r.email as restaurant_email FROM payments p LEFT JOIN restaurants r ON p.restaurant_id = r.id';
+  const params = [];
+  if (status && status !== 'all') {
+    sql += ' WHERE p.status = ?';
+    params.push(status);
+  }
+  sql += ' ORDER BY p.created_at DESC';
+  const payments = await queryAll(sql, params);
+  res.json(payments);
+});
+
+router.put('/payments/:id/approve', superAuth, async (req, res) => {
+  const payment = await queryOne('SELECT * FROM payments WHERE id = ?', [req.params.id]);
+  if (!payment) return res.status(404).json({ error: 'Payment not found' });
+  if (payment.status !== 'pending') return res.status(400).json({ error: 'Payment already processed' });
+  const days = payment.plan_type === 'yearly' ? 365 : 30;
+  const now = new Date();
+  const expiry = new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+  await execute('UPDATE payments SET status = ? WHERE id = ?', ['approved', req.params.id]);
+  await execute('UPDATE restaurants SET plan = ?, plan_expiry = ? WHERE id = ?', ['pro', expiry, payment.restaurant_id]);
+  res.json({ success: true });
+});
+
+router.put('/payments/:id/reject', superAuth, async (req, res) => {
+  const payment = await queryOne('SELECT * FROM payments WHERE id = ?', [req.params.id]);
+  if (!payment) return res.status(404).json({ error: 'Payment not found' });
+  if (payment.status !== 'pending') return res.status(400).json({ error: 'Payment already processed' });
+  await execute('UPDATE payments SET status = ? WHERE id = ?', ['rejected', req.params.id]);
+  res.json({ success: true });
+});
+
 export default router;
