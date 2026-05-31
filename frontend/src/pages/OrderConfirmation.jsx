@@ -489,6 +489,25 @@ export default function OrderConfirmation() {
     );
   }
 
+  // ---- SINGLE ORDER DESKTOP ----
+  if (isDesktop && currentOrder && !tableId) {
+    const isCancelled = currentOrder.status === 'cancelled';
+    return (
+      <div className="customer-desktop" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: 400, width: '100%', padding: 20 }}>
+          <StatusHero order={currentOrder} isCancelled={isCancelled} />
+          <HorizontalSteps order={currentOrder} isCancelled={isCancelled} />
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
+            <button onClick={() => navigate(`/menu/${currentOrder?.restaurant_id}?table=${tableId || ''}`)} className="btn btn-outline btn-sm">
+              <UtensilsCrossed size={16} /> Order More
+            </button>
+          </div>
+          {showRating && renderRatingModal()}
+        </div>
+      </div>
+    );
+  }
+
   // ---- MOBILE RENDER ----
   return (
     <div className="mobile-app" style={{ paddingBottom: 0 }}>

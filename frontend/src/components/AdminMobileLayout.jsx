@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings } from './Icons';
+import { useAuth } from '../context/AuthContext';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, ScrollText, TrendingUp } from './Icons';
 
 const TABS = [
   { key: 'home', label: 'Home', Icon: LayoutDashboard },
@@ -11,6 +12,7 @@ const TABS = [
 ];
 
 export default function AdminMobileLayout({ activeTab, onTabChange, children }) {
+  const { restaurant } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
       <nav className="bottom-nav">
         {TABS.map(tab => {
           const Icon = tab.Icon;
+          const isProTab = tab.key === 'settings' && restaurant?.plan === 'pro';
           return (
             <button
               key={tab.key}
@@ -43,10 +46,28 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
                   <span className="nav-badge" />
                 )}
               </span>
-              {tab.label}
+              {tab.key === 'tables' ? 'Tables' : tab.label}
             </button>
           );
         })}
+        {restaurant?.plan === 'pro' && (
+          <>
+            <button
+              className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
+              onClick={() => onTabChange('history')}
+            >
+              <span className="nav-icon"><ScrollText size={20} /></span>
+              History
+            </button>
+            <button
+              className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
+              onClick={() => onTabChange('analytics')}
+            >
+              <span className="nav-icon"><TrendingUp size={20} /></span>
+              Analytics
+            </button>
+          </>
+        )}
       </nav>
     </div>
   );

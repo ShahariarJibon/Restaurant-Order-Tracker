@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
-  Hourglass, LogOut,
+  Hourglass, LogOut, ScrollText, TrendingUp,
 } from './Icons';
 
 const NAV = [
@@ -27,6 +27,8 @@ function RightPanelOverview({ activeTab }) {
     orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
     menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
     tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
+    history: { Icon: ScrollText, title: 'Order History', lines: ['View past orders', 'Export to Excel'] },
+    analytics: { Icon: TrendingUp, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
     settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
   };
 
@@ -109,6 +111,24 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
               </button>
             );
           })}
+          {restaurant?.plan === 'pro' && (
+            <>
+              <button
+                className={`sidebar-nav-item ${activeTab === 'history' ? 'active' : ''}`}
+                onClick={() => onTabChange('history')}
+              >
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><ScrollText size={18} /></span>
+                <span className="sidebar-nav-label">History</span>
+              </button>
+              <button
+                className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
+                onClick={() => onTabChange('analytics')}
+              >
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><TrendingUp size={18} /></span>
+                <span className="sidebar-nav-label">Analytics</span>
+              </button>
+            </>
+          )}
         </nav>
 
         <div className="sidebar-footer">
