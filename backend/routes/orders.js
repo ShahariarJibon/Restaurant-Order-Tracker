@@ -12,9 +12,14 @@ function toNumber(value) {
 }
 
 router.post('/', async (req, res) => {
-  const { restaurant_id, table_id, customer_name, items } = req.body;
+  const { restaurant_id, table_id, customer_name, items, payment_method, trx_id, payment_screenshot, customer_phone } = req.body;
   if (!restaurant_id || !items || items.length === 0) {
     return res.status(400).json({ error: 'Restaurant ID and items are required' });
+  }
+  // Duplicate TRX check
+  if (trx_id) {
+    const existing = await queryOne('SELECT id FROM orders WHERE trx_id = ? AND restaurant_id = ?', [trx_id, restaurant_id]);
+    if (existing) return res.status(400).json({ error: 'Transaction ID already used' });
   }
   const orderId = uuidv4();
   let total = 0;
@@ -25,13 +30,18 @@ router.post('/', async (req, res) => {
     total += lineTotal;
     orderItems.push({ id: itemId, item_name: item.name, quantity: item.quantity, price: item.price });
   }
-  await execute('INSERT INTO orders (id, restaurant_id, table_id, customer_name, total) VALUES (?, ?, ?, ?, ?)',
-    [orderId, restaurant_id, table_id || null, customer_name || 'Guest', total]);
+  const isPaid = trx_id ? 1 : 0;
+  const status = isPaid ? 'waiting_verification' : 'pending';
+  const paymentStatus = isPaid ? 'pending' : '';
+  await execute(
+    'INSERT INTO orders (id, restaurant_id, table_id, customer_name, total, status, payment_method, trx_id, payment_screenshot, customer_phone, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [orderId, restaurant_id, table_id || null, customer_name || 'Guest', total, status, payment_method || '', trx_id || '', payment_screenshot || '', customer_phone || '', paymentStatus]
+  );
   for (const oi of orderItems) {
     await execute('INSERT INTO order_items (id, order_id, item_name, quantity, price) VALUES (?, ?, ?, ?, ?)',
       [oi.id, orderId, oi.item_name, oi.quantity, oi.price]);
   }
-  res.json({ orderId, total, message: 'Order placed!' });
+  res.json({ orderId, total, status, paymentStatus, message: isPaid ? 'Order placed! Awaiting payment verification' : 'Order placed!' });
 });
 
 router.get('/admin', authMiddleware, async (req, res) => {
@@ -82,11 +92,33 @@ router.get('/public/table/:tableId', async (req, res) => {
 
 router.put('/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
-  if (!['pending', 'preparing', 'done', 'cancelled'].includes(status)) {
+  if (!['pending', 'preparing', 'done', 'cancelled', 'waiting_verification', 'payment_failed'].includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }
   await execute('UPDATE orders SET status = ? WHERE id = ? AND restaurant_id = ?', [status, req.params.id, req.restaurant.id]);
   res.json({ success: true });
+});
+
+router.put('/:id/verify-payment', authMiddleware, async (req, res) => {
+  const order = await queryOne('SELECT * FROM orders WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.payment_status !== 'pending') return res.status(400).json({ error: 'Payment already processed' });
+  await execute(
+    "UPDATE orders SET payment_status = 'verified', status = 'pending' WHERE id = ? AND restaurant_id = ?",
+    [req.params.id, req.restaurant.id]
+  );
+  res.json({ success: true, message: 'Payment verified, order confirmed' });
+});
+
+router.put('/:id/reject-payment', authMiddleware, async (req, res) => {
+  const order = await queryOne('SELECT * FROM orders WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  if (order.payment_status !== 'pending') return res.status(400).json({ error: 'Payment already processed' });
+  await execute(
+    "UPDATE orders SET payment_status = 'rejected', status = 'payment_failed' WHERE id = ? AND restaurant_id = ?",
+    [req.params.id, req.restaurant.id]
+  );
+  res.json({ success: true, message: 'Payment rejected' });
 });
 
 router.delete('/:id', authMiddleware, async (req, res) => {
@@ -212,7 +244,7 @@ router.get('/stats/dashboard', authMiddleware, async (req, res) => {
     "SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue FROM orders WHERE restaurant_id = ? AND DATE(created_at) = ?",
     [req.restaurant.id, today]
   );
-  const pendingOrders = await queryOne("SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
+  const pendingOrders = await queryOne("SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ? AND (status = 'pending' OR status = 'waiting_verification')", [req.restaurant.id]);
   const totalRevenue = await queryOne('SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
   const avgRating = await queryOne('SELECT AVG(rating) as average FROM ratings WHERE restaurant_id = ?', [req.restaurant.id]);
   const doneRevenue = await queryOne("SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE restaurant_id = ? AND status = 'done'", [req.restaurant.id]);

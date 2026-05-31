@@ -5,7 +5,7 @@ import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../u
 import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle, Sparkles } from '../components/Icons';
 import CustomerDesktopLayout from '../components/CustomerDesktopLayout';
 
-function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
+function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency, isPro, restaurantId, tableId }) {
   const updateQty = (id, delta) => {
     setCart(prev => {
       const next = prev.map(c => c.id === id ? { ...c, quantity: Math.max(0, c.quantity + delta) } : c);
@@ -53,12 +53,32 @@ function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder,
         >
           {placing ? 'Placing Order...' : 'Place Order'}
         </button>
+        {isPro && (
+          <button
+            onClick={() => {
+              localStorage.setItem('payment_cart', JSON.stringify(cart));
+              localStorage.setItem('payment_customer_name', customerName || 'Guest');
+              onClose();
+              window.location.href = `/payment/${restaurantId}?table=${tableId || ''}`;
+            }}
+            style={{
+              width: '100%', padding: '16px', borderRadius: 12, border: 'none',
+              background: 'linear-gradient(135deg, var(--orange), #FF6B35)',
+              color: 'white', fontWeight: 800, fontSize: 16, cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(255, 140, 66, 0.5), 0 4px 15px rgba(255, 140, 66, 0.3)',
+              fontFamily: 'inherit', marginTop: 8,
+              animation: 'pulse-glow 2s ease-in-out infinite',
+            }}
+          >
+            Pay Online & Order
+          </button>
+        )}
       </div>
     </>
   );
 }
 
-function DesktopPlaceOrderModal({ cart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
+function DesktopPlaceOrderModal({ cart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency, isPro, restaurantId, tableId }) {
   const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -83,6 +103,26 @@ function DesktopPlaceOrderModal({ cart, customerName, setCustomerName, onPlaceOr
             {placing ? 'Placing...' : 'Place Order'}
           </button>
         </div>
+        {isPro && (
+          <button
+            onClick={() => {
+              localStorage.setItem('payment_cart', JSON.stringify(cart));
+              localStorage.setItem('payment_customer_name', customerName || 'Guest');
+              onClose();
+              window.location.href = `/payment/${restaurantId}?table=${tableId || ''}`;
+            }}
+            style={{
+              width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+              background: 'linear-gradient(135deg, var(--orange), #FF6B35)',
+              color: 'white', fontWeight: 800, fontSize: 15, cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(255, 140, 66, 0.5), 0 4px 15px rgba(255, 140, 66, 0.3)',
+              fontFamily: 'inherit', marginTop: 10,
+              animation: 'pulse-glow 2s ease-in-out infinite',
+            }}
+          >
+            Pay Online & Order
+          </button>
+        )}
       </div>
     </div>
   );
@@ -278,6 +318,9 @@ export default function CustomerMenu() {
             onClose={() => setShowDesktopOrder(false)}
             rates={rates}
             currency={currency}
+            isPro={data?.restaurant?.plan === 'pro'}
+            restaurantId={restaurantId}
+            tableId={tableId}
           />
         )}
       </>
@@ -366,7 +409,7 @@ export default function CustomerMenu() {
         </button>
       )}
 
-      {showCart && (
+        {showCart && (
         <CartPanel
           cart={cart}
           setCart={setCart}
@@ -377,6 +420,9 @@ export default function CustomerMenu() {
           onClose={() => setShowCart(false)}
           rates={rates}
           currency={currency}
+          isPro={data?.restaurant?.plan === 'pro'}
+          restaurantId={restaurantId}
+          tableId={tableId}
         />
       )}
     </div>

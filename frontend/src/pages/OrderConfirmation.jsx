@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
-import { XCircle, CheckCircle, ChefHat, ClipboardList, RefreshCw, UtensilsCrossed, Sparkles, Clock } from '../components/Icons';
+import { XCircle, CheckCircle, ChefHat, ClipboardList, RefreshCw, UtensilsCrossed, Sparkles, Clock, CreditCard, Hourglass } from '../components/Icons';
 
 const RATING_CACHE_KEY = (tableId) => `rated_table_${tableId}`;
 
@@ -17,31 +17,49 @@ function OrderCard({ order, rates, currency, showDone, onDone }) {
   const orderTime = new Date(order.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const isCancelled = order.status === 'cancelled';
+  const isPaymentVerification = order.payment_status === 'pending' && order.status === 'waiting_verification';
+  const isPaymentRejected = order.payment_status === 'rejected' || order.status === 'payment_failed';
+
+  const getBadge = () => {
+    if (isCancelled) return { label: 'CANCELLED', bg: '#FEE2E2', color: '#DC2626' };
+    if (isPaymentRejected) return { label: 'PAYMENT FAILED', bg: '#FEF2F2', color: '#DC2626' };
+    if (isPaymentVerification) return { label: 'AWAITING VERIFICATION', bg: '#FFF8E1', color: '#D97706' };
+    if (order.status === 'done') return { label: 'DONE', bg: 'var(--green-light)', color: 'var(--green)' };
+    if (order.status === 'preparing') return { label: 'PREPARING', bg: 'var(--orange-light)', color: 'var(--orange)' };
+    return { label: 'PENDING', bg: 'var(--yellow-light)', color: 'var(--yellow)' };
+  };
+
+  const badge = getBadge();
 
   return (
     <div style={{
-      background: isCancelled ? '#FEF2F2' : 'var(--white)',
+      background: isCancelled || isPaymentRejected ? '#FEF2F2' : 'var(--white)',
       borderRadius: 'var(--radius)', padding: 16,
       boxShadow: 'var(--shadow-sm)', width: '100%', maxWidth: 320, marginBottom: 12,
-      border: isCancelled ? '2px solid #EF4444' : 'none',
-      opacity: isCancelled ? 0.7 : 1
+      border: isCancelled || isPaymentRejected ? '2px solid #EF4444' : 'none',
+      opacity: isCancelled || isPaymentRejected ? 0.7 : 1
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontWeight: 700, fontSize: 15 }}>#{order.id.slice(0, 6).toUpperCase()}</span>
         <span style={{
           fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 12,
-          background: isCancelled ? '#FEE2E2' : order.status === 'done' ? 'var(--green-light)' : order.status === 'preparing' ? 'var(--orange-light)' : 'var(--yellow-light)',
-          color: isCancelled ? '#DC2626' : order.status === 'done' ? 'var(--green)' : order.status === 'preparing' ? 'var(--orange)' : 'var(--yellow)'
+          background: badge.bg, color: badge.color,
         }}>
-          {isCancelled ? 'CANCELLED' : order.status.toUpperCase()}
+          {badge.label}
         </span>
       </div>
+      {order.payment_method && (
+        <div style={{ fontSize: 11, color: 'var(--gray-500)', marginBottom: 4, display: 'flex', gap: 8 }}>
+          <span><CreditCard size={11} /> {order.payment_method}</span>
+          {order.trx_id && <span>TRX: {order.trx_id}</span>}
+        </div>
+      )}
       <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8 }}>
         {orderTime} • Table {order.table_number || '—'} • {order.customer_name || 'Guest'}
       </div>
-      {isCancelled ? (
+      {isCancelled || isPaymentRejected ? (
         <div style={{ textAlign: 'center', padding: '12px 0', color: '#DC2626', fontWeight: 700, fontSize: 15 }}>
-          <XCircle size={18} /> Order Cancelled
+          <XCircle size={18} /> {isPaymentRejected ? 'Payment Not Verified' : 'Order Cancelled'}
         </div>
       ) : (
         <>
@@ -74,7 +92,7 @@ function OrderCard({ order, rates, currency, showDone, onDone }) {
           </div>
         </>
       )}
-      {showDone && order.status === 'done' && (
+      {showDone && order.status === 'done' && !isPaymentVerification && (
         <button
           onClick={() => onDone(order.id)}
           className="btn btn-sm"
@@ -217,8 +235,42 @@ export default function OrderConfirmation() {
   const activeCount = tableOrders.filter(o => o.status !== 'done' && o.status !== 'cancelled').length;
   const hasCancelled = tableOrders.some(o => o.status === 'cancelled');
 
+  const renderPaymentInfo = (order) => {
+    if (!order?.payment_status) return null;
+    const isWaiting = order.payment_status === 'pending' && order.status === 'waiting_verification';
+    const isRejected = order.payment_status === 'rejected' || order.status === 'payment_failed';
+    const isVerified = order.payment_status === 'verified';
+    return (
+      <div style={{
+        background: isRejected ? '#FEF2F2' : isVerified ? '#F0FDF4' : '#FFF8E1',
+        border: `1px solid ${isRejected ? '#EF4444' : isVerified ? '#22C55E' : '#FFE082'}`,
+        borderRadius: 'var(--radius)', padding: '14px 16px', margin: '0 -4px 16px',
+        width: '100%', maxWidth: 300,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          {isRejected ? <XCircle size={20} color="#DC2626" /> : isVerified ? <CheckCircle size={20} color="#16A34A" /> : <Hourglass size={20} color="#F59E0B" />}
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: isRejected ? '#DC2626' : isVerified ? '#16A34A' : '#D97706' }}>
+              {isRejected ? 'Payment Not Verified' : isVerified ? 'Payment Verified' : 'Awaiting Verification'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>
+              {isRejected ? 'The restaurant could not verify your payment' : isVerified ? 'Payment confirmed by restaurant' : 'Restaurant will verify your payment manually'}
+            </div>
+          </div>
+        </div>
+        {order.payment_method && (
+          <div style={{ fontSize: 12, color: 'var(--gray-500)', display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--gray-200)' }}>
+            <span><CreditCard size={12} /> {order.payment_method}</span>
+            {order.trx_id && <span>TRX: {order.trx_id}</span>}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!tableId && currentOrder) {
     const isCancelled = currentOrder.status === 'cancelled';
+    const isPaymentRejected = currentOrder.payment_status === 'rejected' || currentOrder.status === 'payment_failed';
     const currentIdx = STEPS.findIndex(s => s.key === currentOrder.status);
     const orderTime = new Date(currentOrder.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return (
@@ -243,7 +295,8 @@ export default function OrderConfirmation() {
           )}
           <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 4 }}>Order</p>
           <p style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 16 }}>#{currentOrder.id.slice(0, 8).toUpperCase()}</p>
-          {!isCancelled && (
+          {renderPaymentInfo(currentOrder)}
+          {!isCancelled && !isPaymentRejected && (
             <div className="status-steps">
               {STEPS.map((step, i) => {
                 const status = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
@@ -438,7 +491,9 @@ export default function OrderConfirmation() {
                   <div key={order.id} className={`cd-confirm-order-card ${canc ? 'cancelled' : ''}`}>
                     <div className="cd-confirm-order-header">
                       <span className="cd-confirm-order-id">#{order.id.slice(0, 6).toUpperCase()}</span>
-                      <span className={`badge badge-${order.status}`}>{order.status.toUpperCase()}</span>
+                      <span className={`badge badge-${order.payment_status === 'pending' ? 'pending' : order.status}`}>
+                        {order.payment_status === 'pending' ? 'AWAITING PAYMENT' : order.status.toUpperCase()}
+                      </span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8, marginTop: 4 }}>
                       {time} • Table {order.table_number || '—'} • {order.customer_name || 'Guest'}
@@ -496,6 +551,7 @@ export default function OrderConfirmation() {
       <div className="customer-desktop" style={{ alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: 400, width: '100%', padding: 20 }}>
           <StatusHero order={currentOrder} isCancelled={isCancelled} />
+          {renderPaymentInfo(currentOrder)}
           <HorizontalSteps order={currentOrder} isCancelled={isCancelled} />
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
             <button onClick={() => navigate(`/menu/${currentOrder?.restaurant_id}?table=${tableId || ''}`)} className="btn btn-outline btn-sm">

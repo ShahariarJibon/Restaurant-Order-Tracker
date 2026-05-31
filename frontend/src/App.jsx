@@ -10,6 +10,7 @@ import AdminMenu from './pages/AdminMenu';
 import AdminTables from './pages/AdminTables';
 import AdminSettings from './pages/AdminSettings';
 import CustomerMenu from './pages/CustomerMenu';
+import CustomerPayment from './pages/CustomerPayment';
 import OrderConfirmation from './pages/OrderConfirmation';
 import SuperAdminLogin from './pages/SuperAdminLogin';
 import SuperAdminLayout from './components/SuperAdminLayout';
@@ -142,6 +143,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/menu/:restaurantId" element={<CustomerMenu />} />
+        <Route path="/payment/:restaurantId" element={<CustomerPayment />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
         <Route path="/login/admin" element={<SuperAdminApp />} />
         <Route path="/login" element={<AdminLogin />} />

@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   await execute('INSERT INTO restaurants (id, name, email, password) VALUES (?, ?, ?, ?)', [id, name, email, hashedPassword]);
   const token = generateToken({ id, email, name });
-  res.json({ token, restaurant: { id, name, email, currency: 'BDT', logo: '', plan: 'free', status: 'active' } });
+  res.json({ token, restaurant: { id, name, email, currency: 'BDT', logo: '', plan: 'free', status: 'active', payment_qr_bkash: '', payment_qr_nagad: '', payment_qr_rocket: '' } });
 });
 
 router.post('/login', async (req, res) => {
@@ -51,13 +51,22 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
   const token = generateToken(restaurant);
-  res.json({ token, restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '', plan: restaurant.plan || 'free', status: restaurant.status || 'active' } });
+  res.json({ token, restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '', plan: restaurant.plan || 'free', status: restaurant.status || 'active', payment_qr_bkash: restaurant.payment_qr_bkash || '', payment_qr_nagad: restaurant.payment_qr_nagad || '', payment_qr_rocket: restaurant.payment_qr_rocket || '' } });
 });
 
 router.get('/me', authMiddleware, async (req, res) => {
   const restaurant = await queryOne('SELECT * FROM restaurants WHERE id = ?', [req.restaurant.id]);
   if (!restaurant) return res.status(401).json({ error: 'Not found' });
-  res.json({ restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '', plan: restaurant.plan || 'free', status: restaurant.status || 'active' } });
+  res.json({
+    restaurant: {
+      id: restaurant.id, name: restaurant.name, email: restaurant.email,
+      currency: restaurant.currency || 'BDT', logo: restaurant.logo || '',
+      plan: restaurant.plan || 'free', status: restaurant.status || 'active',
+      payment_qr_bkash: restaurant.payment_qr_bkash || '',
+      payment_qr_nagad: restaurant.payment_qr_nagad || '',
+      payment_qr_rocket: restaurant.payment_qr_rocket || '',
+    }
+  });
 });
 
 router.put('/currency', authMiddleware, async (req, res) => {
@@ -72,6 +81,35 @@ router.post('/logo', authMiddleware, upload.single('logo'), async (req, res) => 
   const logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   await execute('UPDATE restaurants SET logo = ? WHERE id = ?', [logoUrl, req.restaurant.id]);
   res.json({ success: true, logo: logoUrl });
+});
+
+router.put('/payment-qr', authMiddleware, async (req, res) => {
+  const { bkash, nagad, rocket } = req.body;
+  const updates = [];
+  const params = [];
+  if (bkash !== undefined) { updates.push('payment_qr_bkash = ?'); params.push(bkash); }
+  if (nagad !== undefined) { updates.push('payment_qr_nagad = ?'); params.push(nagad); }
+  if (rocket !== undefined) { updates.push('payment_qr_rocket = ?'); params.push(rocket); }
+  if (updates.length === 0) return res.status(400).json({ error: 'No QR data provided' });
+  params.push(req.restaurant.id);
+  await execute(`UPDATE restaurants SET ${updates.join(', ')} WHERE id = ?`, params);
+  const updated = await queryOne(
+    'SELECT payment_qr_bkash, payment_qr_nagad, payment_qr_rocket FROM restaurants WHERE id = ?',
+    [req.restaurant.id]
+  );
+  res.json({ success: true, qr: updated });
+});
+
+router.get('/payment-info', authMiddleware, async (req, res) => {
+  const r = await queryOne(
+    'SELECT payment_qr_bkash, payment_qr_nagad, payment_qr_rocket FROM restaurants WHERE id = ?',
+    [req.restaurant.id]
+  );
+  res.json({
+    bkash: r?.payment_qr_bkash || '',
+    nagad: r?.payment_qr_nagad || '',
+    rocket: r?.payment_qr_rocket || '',
+  });
 });
 
 export default router;

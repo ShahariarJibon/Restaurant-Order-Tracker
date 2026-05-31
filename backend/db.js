@@ -60,7 +60,8 @@ export async function initDB() {
       CREATE TABLE IF NOT EXISTS restaurants (
         id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL, currency TEXT DEFAULT 'BDT', logo TEXT DEFAULT '',
-        created_at TIMESTAMP DEFAULT NOW()
+        payment_qr_bkash TEXT DEFAULT '', payment_qr_nagad TEXT DEFAULT '',
+        payment_qr_rocket TEXT DEFAULT '', created_at TIMESTAMP DEFAULT NOW()
       )
     `);
     await pgPool.query(`
@@ -84,7 +85,10 @@ export async function initDB() {
       CREATE TABLE IF NOT EXISTS orders (
         id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT,
         customer_name TEXT DEFAULT 'Guest', status TEXT DEFAULT 'pending',
-        total REAL DEFAULT 0, created_at TIMESTAMP DEFAULT NOW()
+        total REAL DEFAULT 0, created_at TIMESTAMP DEFAULT NOW(),
+        payment_method TEXT DEFAULT '', trx_id TEXT DEFAULT '',
+        payment_screenshot TEXT DEFAULT '', customer_phone TEXT DEFAULT '',
+        payment_status TEXT DEFAULT ''
       )
     `);
     await pgPool.query(`
@@ -98,6 +102,14 @@ export async function initDB() {
     try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT \'free\''); } catch {}
     try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT \'active\''); } catch {}
     try { await pgPool.query('ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS plan_expiry TEXT DEFAULT \'\''); } catch {}
+    try { await pgPool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS trx_id TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_screenshot TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_phone TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_bkash TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_nagad TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_rocket TEXT DEFAULT ''"); } catch {}
     try {
       await pgPool.query(`
         CREATE TABLE IF NOT EXISTS ratings (
@@ -128,17 +140,25 @@ export async function initDB() {
     }
     db.run('PRAGMA foreign_keys = ON');
     setInterval(() => sqliteSave(), 5000);
-    db.run(`CREATE TABLE IF NOT EXISTS restaurants (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, currency TEXT DEFAULT 'BDT', logo TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')))`);
+    db.run(`CREATE TABLE IF NOT EXISTS restaurants (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, currency TEXT DEFAULT 'BDT', logo TEXT DEFAULT '', payment_qr_bkash TEXT DEFAULT '', payment_qr_nagad TEXT DEFAULT '', payment_qr_rocket TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')))`);
     db.run(`CREATE TABLE IF NOT EXISTS categories (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, name TEXT NOT NULL, sort_order INTEGER DEFAULT 0)`);
     db.run(`CREATE TABLE IF NOT EXISTS menu_items (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, category_id TEXT, name TEXT NOT NULL, price REAL NOT NULL, description TEXT DEFAULT '', image TEXT DEFAULT '', available INTEGER DEFAULT 1, created_at TEXT DEFAULT (datetime('now')))`);
     db.run(`CREATE TABLE IF NOT EXISTS tables_tbl (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_number INTEGER NOT NULL, qr_code TEXT DEFAULT '')`);
-    db.run(`CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, customer_name TEXT DEFAULT 'Guest', status TEXT DEFAULT 'pending', total REAL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')))`);
+    db.run(`CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, customer_name TEXT DEFAULT 'Guest', status TEXT DEFAULT 'pending', total REAL DEFAULT 0, created_at TEXT DEFAULT (datetime('now')), payment_method TEXT DEFAULT '', trx_id TEXT DEFAULT '', payment_screenshot TEXT DEFAULT '', customer_phone TEXT DEFAULT '', payment_status TEXT DEFAULT '')`);
     db.run(`CREATE TABLE IF NOT EXISTS order_items (id TEXT PRIMARY KEY, order_id TEXT NOT NULL, item_name TEXT NOT NULL, quantity INTEGER NOT NULL, price REAL NOT NULL)`);
     try { db.run("ALTER TABLE restaurants ADD COLUMN currency TEXT DEFAULT 'BDT'"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN logo TEXT DEFAULT ''"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN plan TEXT DEFAULT 'free'"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN status TEXT DEFAULT 'active'"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN plan_expiry TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE orders ADD COLUMN payment_method TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE orders ADD COLUMN trx_id TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE orders ADD COLUMN payment_screenshot TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE orders ADD COLUMN customer_phone TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_bkash TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_nagad TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_rocket TEXT DEFAULT ''"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS ratings (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, rating INTEGER NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, method TEXT NOT NULL, trx_id TEXT NOT NULL, sender_number TEXT DEFAULT '', amount REAL NOT NULL, plan_type TEXT NOT NULL, status TEXT DEFAULT 'pending', created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     sqliteSave();

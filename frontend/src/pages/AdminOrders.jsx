@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import { cacheData, getCachedData } from '../utils/dataCache';
-import { ClipboardList, Trash2 } from '../components/Icons';
+import { ClipboardList, Trash2, CreditCard, CheckCircle, XCircle, Phone, Download } from '../components/Icons';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -47,10 +47,10 @@ export default function AdminOrders() {
     setOrders(prev => prev.filter(o => o.status !== 'done'));
   };
 
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter || (filter === 'pending' && (o.status === 'waiting_verification' || o.payment_status === 'pending')));
 
   const counts = {
-    pending: orders.filter(o => o.status === 'pending').length,
+    pending: orders.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length,
     preparing: orders.filter(o => o.status === 'preparing').length,
     done: orders.filter(o => o.status === 'done').length,
   };
@@ -97,8 +97,21 @@ export default function AdminOrders() {
         </div>
       ) : (
         <div className="order-list">
-          {filtered.map(order => (
-            <div key={order.id} className="order-card">
+          {filtered.map(order => {
+            const isPaymentVerification = order.payment_status === 'pending' && (order.status === 'waiting_verification' || order.status === 'pending');
+            const isPaymentFailed = order.status === 'payment_failed';
+            const getBadgeClass = () => {
+              if (isPaymentVerification) return 'badge-pending';
+              if (isPaymentFailed) return 'badge-cancelled';
+              return `badge-${order.status}`;
+            };
+            const getBadgeLabel = () => {
+              if (isPaymentVerification) return 'PENDING VERIFICATION';
+              if (isPaymentFailed) return 'PAYMENT FAILED';
+              return order.status.toUpperCase();
+            };
+            return (
+            <div key={order.id} className="order-card" style={{ borderLeft: isPaymentVerification ? '4px solid var(--orange)' : undefined }}>
               <div className="order-card-top">
                 <div>
                   <div className="order-card-customer">{order.customer_name || 'Guest'}</div>
@@ -106,8 +119,20 @@ export default function AdminOrders() {
                     Table {order.table_number || '—'} • {new Date(order.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                <span className={`badge badge-${order.status}`}>{order.status}</span>
+                <span className={`badge ${getBadgeClass()}`}>{getBadgeLabel()}</span>
               </div>
+              {order.payment_method && (
+                <div style={{ fontSize: 11, color: 'var(--gray-500)', marginBottom: 6, display: 'flex', gap: 10, flexWrap: 'wrap', padding: '0 2px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><CreditCard size={12} /> {order.payment_method}</span>
+                  {order.trx_id && <span>TRX: {order.trx_id}</span>}
+                  {order.customer_phone && <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Phone size={12} /> {order.customer_phone}</span>}
+                  {order.payment_screenshot && (
+                    <a href={order.payment_screenshot} target="_blank" rel="noreferrer" style={{ color: 'var(--orange)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, textDecoration: 'none' }}>
+                      <Download size={12} /> Screenshot
+                    </a>
+                  )}
+                </div>
+              )}
               {order.items && order.items.length > 0 && (
                 <div className="order-card-items">
                   {order.items.map(item => (
@@ -118,7 +143,17 @@ export default function AdminOrders() {
               <div className="order-card-bottom">
                 <div className="order-card-total">{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</div>
                 <div className="order-card-actions">
-                  {order.status === 'pending' && (
+                  {isPaymentVerification && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={async () => { await axios.put(`/api/orders/${order.id}/verify-payment`); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'verified', status: 'pending' } : o)); }}>
+                        <CheckCircle size={14} /> Confirm
+                      </button>
+                      <button className="btn btn-sm btn-danger" onClick={async () => { await axios.put(`/api/orders/${order.id}/reject-payment`); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'rejected', status: 'payment_failed' } : o)); }}>
+                        <XCircle size={14} /> Reject
+                      </button>
+                    </div>
+                  )}
+                  {order.status === 'pending' && !isPaymentVerification && (
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>
                         Accept
@@ -141,7 +176,8 @@ export default function AdminOrders() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
