@@ -40,7 +40,7 @@ function ProtectedAdmin() {
     );
   }
 
-  if (!restaurant) return <Navigate to="/admin/login" />;
+  if (!restaurant) return <Navigate to="/login" />;
 
   const renderTab = () => {
     switch (activeTab) {
@@ -99,10 +99,10 @@ export default function App() {
       <Routes>
         <Route path="/menu/:restaurantId" element={<CustomerMenu />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<SuperAdminApp />} />
+        <Route path="/login/admin" element={<SuperAdminApp />} />
+        <Route path="/login" element={<AdminLogin />} />
         <Route path="/" element={<ProtectedAdmin />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </AuthProvider>
   );
