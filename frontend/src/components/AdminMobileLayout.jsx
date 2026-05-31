@@ -30,7 +30,7 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
   return (
     <div className="admin-app">
       {children}
-      <nav className="bottom-nav">
+      <nav className="bottom-nav" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {TABS.map(tab => {
           const Icon = tab.Icon;
           const isProTab = tab.key === 'settings' && restaurant?.plan === 'pro';
@@ -51,23 +51,45 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
           );
         })}
         {restaurant?.plan === 'pro' && (
-          <>
-            <button
-              className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => onTabChange('history')}
-            >
-              <span className="nav-icon"><ScrollText size={20} /></span>
-              History
-            </button>
-            <button
-              className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => onTabChange('analytics')}
-            >
-              <span className="nav-icon"><TrendingUp size={20} /></span>
-              Analytics
-            </button>
-          </>
-        )}
+            <>
+              <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => onTabChange('history')}>
+                <span className="nav-icon"><ScrollText size={20} /></span>
+                History
+              </button>
+              <button className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => onTabChange('analytics')}>
+                <span className="nav-icon"><BarChart3 size={20} /></span>
+                Analytics
+              </button>
+              <button className={`nav-item ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => onTabChange('payments')}>
+                <span className="nav-icon"><CreditCard size={20} /></span>
+                Payments
+              </button>
+              <button className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
+                <span className="nav-icon"><Bell size={20} /></span>
+                Alerts
+              </button>
+              <button className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
+                <span className="nav-icon"><Users size={20} /></span>
+                Staff
+              </button>
+              <button className={`nav-item ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => onTabChange('inventory')}>
+                <span className="nav-icon"><Package size={20} /></span>
+                Stock
+              </button>
+              <button className={`nav-item ${activeTab === 'loyalty' ? 'active' : ''}`} onClick={() => onTabChange('loyalty')}>
+                <span className="nav-icon"><Gift size={20} /></span>
+                Loyalty
+              </button>
+              <button className={`nav-item ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => onTabChange('billing')}>
+                <span className="nav-icon"><FileText size={20} /></span>
+                Billing
+              </button>
+              <button className={`nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
+                <span className="nav-icon"><Bot size={20} /></span>
+                AI
+              </button>
+            </>
+          )}
       </nav>
     </div>
   );

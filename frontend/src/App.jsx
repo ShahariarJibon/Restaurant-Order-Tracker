@@ -21,6 +21,34 @@ import SuperAdminReports from './pages/SuperAdminReports';
 import SuperAdminSettings from './pages/SuperAdminSettings';
 import UpgradeToPro from './pages/UpgradeToPro';
 import AdminAnalytics from './pages/AdminAnalytics';
+import ProFeaturePlaceholder from './pages/ProFeaturePlaceholder';
+import {
+  ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
+} from './components/Icons';
+
+const PRO_TAB_ICONS = {
+  history: ScrollText,
+  analytics: BarChart3,
+  payments: CreditCard,
+  notifications: Bell,
+  staff: Users,
+  inventory: Package,
+  loyalty: Gift,
+  billing: FileText,
+  ai: Bot,
+};
+
+const PRO_TAB_INFO = {
+  history: { name: 'History', desc: 'Order history with filters & export' },
+  analytics: { name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
+  payments: { name: 'Payments', desc: 'bKash, Nagad, card payments' },
+  notifications: { name: 'Notifications', desc: 'Sound alerts, push, SMS' },
+  staff: { name: 'Staff Management', desc: 'Multiple accounts with roles' },
+  inventory: { name: 'Inventory', desc: 'Track ingredients & stock' },
+  loyalty: { name: 'Loyalty Program', desc: 'Points, coupons, promos' },
+  billing: { name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
+  ai: { name: 'AI Features', desc: 'Smart suggestions & predictions' },
+};
 
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
@@ -45,6 +73,14 @@ function ProtectedAdmin() {
 
   const isPro = restaurant?.plan === 'pro';
 
+  const renderProFeature = (key) => {
+    const info = PRO_TAB_INFO[key];
+    const Icon = PRO_TAB_ICONS[key];
+    return <ProFeaturePlaceholder name={info?.name || key} desc={info?.desc || ''} Icon={Icon} />;
+  };
+
+  const PRO_TABS = ['payments', 'notifications', 'staff', 'inventory', 'loyalty', 'billing', 'ai'];
+
   const renderTab = () => {
     switch (activeTab) {
       case 'home': return <AdminHome onGoToSettings={() => setActiveTab('settings')} onGoToUpgrade={() => setActiveTab('upgrade')} />;
@@ -53,9 +89,12 @@ function ProtectedAdmin() {
       case 'tables': return <AdminTables />;
       case 'history': return <AdminOrders />;
       case 'analytics': return <AdminAnalytics />;
-      case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} />;
+      case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
-      default: return <AdminHome />;
+      default: {
+        if (isPro && PRO_TABS.includes(activeTab)) return renderProFeature(activeTab);
+        return <AdminHome />;
+      }
     }
   };
 

@@ -1066,6 +1066,16 @@ input:focus, select:focus, textarea:focus {
 
   .sidebar-nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
 
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 1.5px;
+    padding: 16px 16px 6px;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
   .sidebar-badge {
     margin-left: auto;
     background: #EF4444;

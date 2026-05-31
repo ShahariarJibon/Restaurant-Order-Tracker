@@ -4,30 +4,27 @@ import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 import {
   ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
-  Sun, Moon, Lock, LogOut, Star, Settings, Crown, CheckCircle, ArrowLeft,
+  Sun, Moon, Lock, LogOut, Star, Crown, CheckCircle,
 } from '../components/Icons';
-import AdminAnalytics from './AdminAnalytics';
-import AdminOrders from './AdminOrders';
 
 const PRO_FEATURES = [
-  { Icon: ScrollText, name: 'History', desc: 'Order history with filters & export' },
-  { Icon: BarChart3, name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
-  { Icon: CreditCard, name: 'Payments', desc: 'bKash, Nagad, card payments' },
-  { Icon: Bell, name: 'Notifications', desc: 'Sound alerts, push, SMS' },
-  { Icon: Users, name: 'Staff Management', desc: 'Multiple accounts with roles' },
-  { Icon: Package, name: 'Inventory', desc: 'Track ingredients & stock' },
-  { Icon: Gift, name: 'Loyalty Program', desc: 'Points, coupons, promos' },
-  { Icon: FileText, name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
-  { Icon: Bot, name: 'AI Features', desc: 'Smart suggestions & predictions' },
+  { Icon: ScrollText, tabKey: 'history', name: 'History', desc: 'Order history with filters & export' },
+  { Icon: BarChart3, tabKey: 'analytics', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
+  { Icon: CreditCard, tabKey: 'payments', name: 'Payments', desc: 'bKash, Nagad, card payments' },
+  { Icon: Bell, tabKey: 'notifications', name: 'Notifications', desc: 'Sound alerts, push, SMS' },
+  { Icon: Users, tabKey: 'staff', name: 'Staff Management', desc: 'Multiple accounts with roles' },
+  { Icon: Package, tabKey: 'inventory', name: 'Inventory', desc: 'Track ingredients & stock' },
+  { Icon: Gift, tabKey: 'loyalty', name: 'Loyalty Program', desc: 'Points, coupons, promos' },
+  { Icon: FileText, tabKey: 'billing', name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
+  { Icon: Bot, tabKey: 'ai', name: 'AI Features', desc: 'Smart suggestions & predictions' },
 ];
 
-export default function AdminSettings({ onGoToUpgrade }) {
+export default function AdminSettings({ onGoToUpgrade, onNavigate }) {
   const { restaurant, logout, updateCurrency, updateRestaurant } = useAuth();
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
   const [currency, setCurrency] = useState(getSelectedCurrency());
-  const [view, setView] = useState('settings');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
@@ -66,34 +63,6 @@ export default function AdminSettings({ onGoToUpgrade }) {
       updateCurrency(code);
     } catch {}
   };
-
-  if (view === 'history') {
-    return (
-      <div className="tab-content">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <button onClick={() => setView('settings')} style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontFamily: 'inherit' }}>
-            <ArrowLeft size={18} /> Back
-          </button>
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Order History</h2>
-        </div>
-        <AdminOrders />
-      </div>
-    );
-  }
-
-  if (view === 'analytics') {
-    return (
-      <div className="tab-content">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <button onClick={() => setView('settings')} style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontFamily: 'inherit' }}>
-            <ArrowLeft size={18} /> Back
-          </button>
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Advanced Analytics</h2>
-        </div>
-        <AdminAnalytics />
-      </div>
-    );
-  }
 
   return (
     <div className="tab-content">
@@ -161,15 +130,14 @@ export default function AdminSettings({ onGoToUpgrade }) {
         </h3>
         {PRO_FEATURES.map((feat, i) => {
           const FeatIcon = feat.Icon;
-          const isClickable = isPro && (feat.name === 'Advanced Analytics' || feat.name === 'History');
           return (
             <div
               key={i}
               className="pro-card"
-              onClick={isClickable ? () => setView(feat.name === 'History' ? 'history' : 'analytics') : undefined}
+              onClick={isPro && onNavigate ? () => onNavigate(feat.tabKey) : undefined}
               style={{
                 opacity: isPro ? 1 : 0.6, filter: isPro ? 'none' : 'grayscale(0.3)',
-                cursor: isClickable ? 'pointer' : 'default',
+                cursor: isPro && onNavigate ? 'pointer' : 'default',
               }}
             >
               <div className="pro-card-icon">{isPro ? <CheckCircle size={20} style={{ color: 'var(--green)' }} /> : <Lock size={20} />}</div>

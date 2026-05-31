@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
-  Hourglass, LogOut, ScrollText, TrendingUp,
+  Hourglass, LogOut, ScrollText, TrendingUp, BarChart3,
+  CreditCard, Bell, Users, Package, Gift, FileText, Bot,
 } from './Icons';
 
 const NAV = [
@@ -22,15 +23,23 @@ function RightPanelOverview({ activeTab }) {
     axios.get('/api/orders/admin').then(r => setPendingCount(r.data.filter(o => o.status === 'pending').length)).catch(() => {});
   }, []);
 
-  const panels = {
+  const allPanels = {
     home: { Icon: LayoutDashboard, title: 'Dashboard', lines: ['Overview of your restaurant', 'Real-time stats & insights'] },
     orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
     menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
     tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
     history: { Icon: ScrollText, title: 'Order History', lines: ['View past orders', 'Export to Excel'] },
-    analytics: { Icon: TrendingUp, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
+    analytics: { Icon: BarChart3, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
+    payments: { Icon: CreditCard, title: 'Payments', lines: ['bKash, Nagad, card payments', 'Coming soon'] },
+    notifications: { Icon: Bell, title: 'Notifications', lines: ['Sound alerts, push, SMS', 'Coming soon'] },
+    staff: { Icon: Users, title: 'Staff Management', lines: ['Multiple accounts with roles', 'Coming soon'] },
+    inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
+    loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
+    billing: { Icon: FileText, title: 'Billing & Reports', lines: ['Invoices, tax reports, export', 'Coming soon'] },
+    ai: { Icon: Bot, title: 'AI Features', lines: ['Smart suggestions & predictions', 'Coming soon'] },
     settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
   };
+  const panels = allPanels;
 
   const p = panels[activeTab] || panels.home;
   const PanelIcon = p.Icon;
@@ -113,19 +122,42 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
           })}
           {restaurant?.plan === 'pro' && (
             <>
-              <button
-                className={`sidebar-nav-item ${activeTab === 'history' ? 'active' : ''}`}
-                onClick={() => onTabChange('history')}
-              >
+              <div className="sidebar-section-label">PRO FEATURES</div>
+              <button className={`sidebar-nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => onTabChange('history')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><ScrollText size={18} /></span>
                 <span className="sidebar-nav-label">History</span>
               </button>
-              <button
-                className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-                onClick={() => onTabChange('analytics')}
-              >
-                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><TrendingUp size={18} /></span>
+              <button className={`sidebar-nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => onTabChange('analytics')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><BarChart3 size={18} /></span>
                 <span className="sidebar-nav-label">Analytics</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => onTabChange('payments')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><CreditCard size={18} /></span>
+                <span className="sidebar-nav-label">Payments</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Bell size={18} /></span>
+                <span className="sidebar-nav-label">Notifications</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Users size={18} /></span>
+                <span className="sidebar-nav-label">Staff</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => onTabChange('inventory')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Package size={18} /></span>
+                <span className="sidebar-nav-label">Inventory</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'loyalty' ? 'active' : ''}`} onClick={() => onTabChange('loyalty')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Gift size={18} /></span>
+                <span className="sidebar-nav-label">Loyalty</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => onTabChange('billing')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><FileText size={18} /></span>
+                <span className="sidebar-nav-label">Billing</span>
+              </button>
+              <button className={`sidebar-nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Bot size={18} /></span>
+                <span className="sidebar-nav-label">AI</span>
               </button>
             </>
           )}
@@ -144,7 +176,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
         {/* TOPBAR */}
         <header className="desktop-topbar">
           <div className="topbar-left">
-            <h2 className="topbar-title">{NAV.find(t => t.key === activeTab)?.label || 'Dashboard'}</h2>
+            <h2 className="topbar-title">{NAV.find(t => t.key === activeTab)?.label || panels[activeTab]?.title || 'Dashboard'}</h2>
           </div>
           <div className="topbar-right">
             {stats && (
