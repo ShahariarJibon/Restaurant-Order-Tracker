@@ -68,6 +68,8 @@ export default function CustomerMenu() {
   const [customerName, setCustomerName] = useState('');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
+  const lastOrderId = localStorage.getItem('lastOrderId');
+  const lastRestaurantId = localStorage.getItem('lastRestaurantId');
   const [offline, setOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -114,6 +116,9 @@ export default function CustomerMenu() {
         customer_name: customerName || 'Guest',
         items: cart.map(c => ({ name: c.name, price: c.price, quantity: c.quantity }))
       });
+      localStorage.setItem('lastOrderId', res.data.orderId);
+      localStorage.setItem('lastTableId', tableId || '');
+      localStorage.setItem('lastRestaurantId', restaurantId);
       navigate(`/order-confirmation/${res.data.orderId}?table=${tableId || ''}`);
     } catch {
       setError('Failed to place order. Try again.');
@@ -155,9 +160,6 @@ export default function CustomerMenu() {
         <div className="top-bar-left">
           <h1>{data.restaurant?.name || 'Restaurant'}</h1>
           <p>Table {tableId ? `#${tableId.slice(0, 4)}` : '—'}</p>
-        </div>
-        <div className="top-bar-right">
-          <button className="lang-toggle">EN</button>
         </div>
       </div>
 
@@ -214,6 +216,12 @@ export default function CustomerMenu() {
         <button className="floating-cart" onClick={() => setShowCart(true)}>
           🛒
           <span className="floating-cart-badge">{cartCount}</span>
+        </button>
+      )}
+      {cartCount === 0 && lastOrderId && lastRestaurantId === restaurantId && (
+        <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${lastOrderId}?table=${localStorage.getItem('lastTableId') || ''}`)}>
+          📋
+          <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
       )}
 

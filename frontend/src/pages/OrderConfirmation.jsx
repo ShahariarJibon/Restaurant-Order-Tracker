@@ -18,6 +18,11 @@ export default function OrderConfirmation() {
       try {
         const res = await axios.get(`/api/orders/${orderId}`);
         setOrder(res.data);
+        if (res.data.status === 'done') {
+          localStorage.removeItem('lastOrderId');
+          localStorage.removeItem('lastTableId');
+          localStorage.removeItem('lastRestaurantId');
+        }
       } catch {}
     };
     load();
