@@ -11,6 +11,14 @@ import AdminTables from './pages/AdminTables';
 import AdminSettings from './pages/AdminSettings';
 import CustomerMenu from './pages/CustomerMenu';
 import OrderConfirmation from './pages/OrderConfirmation';
+import SuperAdminLogin from './pages/SuperAdminLogin';
+import SuperAdminLayout from './components/SuperAdminLayout';
+import SuperAdminOverview from './pages/SuperAdminOverview';
+import SuperAdminRestaurants from './pages/SuperAdminRestaurants';
+import SuperAdminPayments from './pages/SuperAdminPayments';
+import SuperAdminSubscriptions from './pages/SuperAdminSubscriptions';
+import SuperAdminReports from './pages/SuperAdminReports';
+import SuperAdminSettings from './pages/SuperAdminSettings';
 
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
@@ -52,6 +60,37 @@ function ProtectedAdmin() {
   );
 }
 
+function SuperAdminApp() {
+  const [token, setToken] = useState(localStorage.getItem('super_token'));
+  const [activeTab, setActiveTab] = useState('overview');
+
+  if (!token) {
+    return <SuperAdminLogin onLogin={(t) => setToken(t)} />;
+  }
+
+  const renderPage = () => {
+    switch (activeTab) {
+      case 'overview': return <SuperAdminOverview />;
+      case 'restaurants': return <SuperAdminRestaurants />;
+      case 'payments': return <SuperAdminPayments />;
+      case 'subscriptions': return <SuperAdminSubscriptions />;
+      case 'reports': return <SuperAdminReports />;
+      case 'settings': return <SuperAdminSettings />;
+      default: return <SuperAdminOverview />;
+    }
+  };
+
+  return (
+    <SuperAdminLayout
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      onLogout={() => { localStorage.removeItem('super_token'); setToken(null); }}
+    >
+      {renderPage()}
+    </SuperAdminLayout>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -59,7 +98,8 @@ export default function App() {
         <Route path="/menu/:restaurantId" element={<CustomerMenu />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<ProtectedAdmin />} />
+        <Route path="/admin" element={<SuperAdminApp />} />
+        <Route path="/owner" element={<ProtectedAdmin />} />
         <Route path="*" element={<Navigate to="/admin" />} />
       </Routes>
     </AuthProvider>

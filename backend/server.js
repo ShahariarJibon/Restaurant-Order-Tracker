@@ -9,6 +9,7 @@ import menuRoutes from './routes/menu.js';
 import orderRoutes from './routes/orders.js';
 import tableRoutes from './routes/tables.js';
 import ratingRoutes from './routes/ratings.js';
+import superAdminRoutes from './routes/superadmin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/ratings', ratingRoutes);
+app.use('/api/super-admin', superAdminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
