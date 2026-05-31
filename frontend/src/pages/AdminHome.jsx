@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
 const CARD_STYLES = [
-  { color: '#FF8C42', icon: '💰', label: "Today's Revenue", key: 'todayRevenue', format: 'price' },
+  { color: '#FF8C42', icon: '💰', label: 'Total Revenue (Done)', key: 'doneRevenue', format: 'price' },
   { color: '#6366F1', icon: '📋', label: 'Total Orders', key: 'totalOrders', format: 'number' },
   { color: '#F59E0B', icon: '⏳', label: 'Pending Orders', key: 'pendingOrders', format: 'number' },
   { color: '#10B981', icon: '⭐', label: 'Average Rating', key: 'averageRating', format: 'rating' },
@@ -24,13 +24,13 @@ export default function AdminHome({ onGoToSettings }) {
   }, []);
 
   const getValue = (card) => {
-    if (!stats) return '—';
+    if (!stats) return 0;
     const raw = stats[card.key] ?? 0;
     if (card.format === 'price') {
       return rates ? formatPrice(raw, currency, rates) : `$${Number(raw).toFixed(2)}`;
     }
     if (card.format === 'rating') {
-      return Number(raw) > 0 ? `${Number(raw).toFixed(1)} ★` : 'No ratings';
+      return Number(raw) > 0 ? `${Number(raw).toFixed(1)} ★` : '0 ★';
     }
     return raw;
   };
