@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
 const CARD_STYLES = [
-  { bg: 'linear-gradient(135deg, #FF8C42, #FFB366)', icon: '💰', label: "Today's Revenue", key: 'todayRevenue', format: 'price' },
-  { bg: 'linear-gradient(135deg, #6366F1, #818CF8)', icon: '📋', label: 'Total Orders', key: 'totalOrders', format: 'number' },
-  { bg: 'linear-gradient(135deg, #F59E0B, #FBBF24)', icon: '⏳', label: 'Pending Orders', key: 'pendingOrders', format: 'number' },
-  { bg: 'linear-gradient(135deg, #10B981, #34D399)', icon: '⭐', label: 'Average Rating', key: 'averageRating', format: 'rating' },
+  { color: '#FF8C42', icon: '💰', label: "Today's Revenue", key: 'todayRevenue', format: 'price' },
+  { color: '#6366F1', icon: '📋', label: 'Total Orders', key: 'totalOrders', format: 'number' },
+  { color: '#F59E0B', icon: '⏳', label: 'Pending Orders', key: 'pendingOrders', format: 'number' },
+  { color: '#10B981', icon: '⭐', label: 'Average Rating', key: 'averageRating', format: 'rating' },
 ];
 
 export default function AdminHome({ onGoToSettings }) {
@@ -61,27 +61,29 @@ export default function AdminHome({ onGoToSettings }) {
           <div
             key={card.key}
             style={{
-              background: card.bg,
+              background: 'var(--white)',
               borderRadius: 16,
-              padding: '20px 24px',
-              color: '#fff',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+              padding: '24px 28px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
+              gap: 18,
+              border: '1px solid var(--gray-100)',
             }}
           >
             <div style={{
-              width: 52, height: 52, borderRadius: 14,
-              background: 'rgba(255,255,255,0.2)',
+              width: 56, height: 56, borderRadius: 16,
+              background: `${card.color}18`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 28, flexShrink: 0,
+              fontSize: 30, flexShrink: 0,
             }}>
               {card.icon}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9, marginBottom: 4 }}>{card.label}</div>
-              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: card.color, marginBottom: 6 }}>
+                {card.label}
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--gray-900)', lineHeight: 1.2 }}>
                 {getValue(card)}
               </div>
             </div>
