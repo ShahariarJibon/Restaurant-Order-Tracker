@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, ScrollText, TrendingUp } from './Icons';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot } from './Icons';
 
 const TABS = [
   { key: 'home', label: 'Home', Icon: LayoutDashboard },
