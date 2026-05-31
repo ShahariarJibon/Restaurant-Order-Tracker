@@ -1,8 +1,9 @@
+import 'express-async-errors';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initDB, closeDB } from './db.js';
+import { initDB } from './db.js';
 import authRoutes from './routes/auth.js';
 import menuRoutes from './routes/menu.js';
 import orderRoutes from './routes/orders.js';
@@ -32,7 +33,7 @@ async function start() {
   });
 }
 
-process.on('SIGINT', () => { closeDB(); process.exit(); });
-process.on('SIGTERM', () => { closeDB(); process.exit(); });
+process.on('SIGINT', () => process.exit());
+process.on('SIGTERM', () => process.exit());
 
 start();

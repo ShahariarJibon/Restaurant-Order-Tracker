@@ -2,7 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { getDB, queryOne, execute } from '../db.js';
+import { queryOne, execute } from '../db.js';
 import { generateToken } from '../middleware/auth.js';
 
 const router = Router();
@@ -13,23 +13,23 @@ router.post('/register', async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required' });
   }
-  const existing = queryOne('SELECT id FROM restaurants WHERE email = ?', [email]);
+  const existing = await queryOne('SELECT id FROM restaurants WHERE email = ?', [email]);
   if (existing) {
     return res.status(400).json({ error: 'Email already registered' });
   }
   const id = uuidv4();
   const hashedPassword = await bcrypt.hash(password, 10);
-  execute('INSERT INTO restaurants (id, name, email, password) VALUES (?, ?, ?, ?)', [id, name, email, hashedPassword]);
+  await execute('INSERT INTO restaurants (id, name, email, password) VALUES (?, ?, ?, ?)', [id, name, email, hashedPassword]);
   const token = generateToken({ id, email, name });
   res.json({ token, restaurant: { id, name, email } });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
-  const restaurant = queryOne('SELECT * FROM restaurants WHERE email = ?', [email]);
+  const restaurant = await queryOne('SELECT * FROM restaurants WHERE email = ?', [email]);
   if (!restaurant) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }

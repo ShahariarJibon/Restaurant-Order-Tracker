@@ -24,6 +24,16 @@ export default function AdminOrders() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: next } : o));
   };
 
+  const deleteOrder = async (orderId) => {
+    await axios.delete(`/api/orders/${orderId}`);
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+  };
+
+  const deleteAllDone = async () => {
+    await axios.delete('/api/orders/done/all');
+    setOrders(prev => prev.filter(o => o.status !== 'done'));
+  };
+
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   const counts = {
@@ -55,6 +65,16 @@ export default function AdminOrders() {
           </button>
         ))}
       </div>
+
+      {filter === 'done' && counts.done > 0 && (
+        <button
+          className="btn btn-danger btn-sm"
+          style={{ marginBottom: 12, width: '100%' }}
+          onClick={deleteAllDone}
+        >
+          🗑️ Delete All Done Orders
+        </button>
+      )}
 
       {filtered.length === 0 ? (
         <div className="empty-state">
@@ -93,6 +113,11 @@ export default function AdminOrders() {
                   {order.status === 'preparing' && (
                     <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={() => updateStatus(order.id, order.status)}>
                       Mark Done
+                    </button>
+                  )}
+                  {order.status === 'done' && (
+                    <button className="btn btn-sm btn-danger" onClick={() => deleteOrder(order.id)}>
+                      🗑️
                     </button>
                   )}
                 </div>

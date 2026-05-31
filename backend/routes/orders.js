@@ -5,7 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { restaurant_id, table_id, customer_name, items } = req.body;
   if (!restaurant_id || !items || items.length === 0) {
     return res.status(400).json({ error: 'Restaurant ID and items are required' });
@@ -19,57 +19,72 @@ router.post('/', (req, res) => {
     total += lineTotal;
     orderItems.push({ id: itemId, item_name: item.name, quantity: item.quantity, price: item.price });
   }
-  execute('INSERT INTO orders (id, restaurant_id, table_id, customer_name, total) VALUES (?, ?, ?, ?, ?)',
+  await execute('INSERT INTO orders (id, restaurant_id, table_id, customer_name, total) VALUES (?, ?, ?, ?, ?)',
     [orderId, restaurant_id, table_id || null, customer_name || 'Guest', total]);
   for (const oi of orderItems) {
-    execute('INSERT INTO order_items (id, order_id, item_name, quantity, price) VALUES (?, ?, ?, ?, ?)',
+    await execute('INSERT INTO order_items (id, order_id, item_name, quantity, price) VALUES (?, ?, ?, ?, ?)',
       [oi.id, orderId, oi.item_name, oi.quantity, oi.price]);
   }
   res.json({ orderId, total, message: 'Order placed!' });
 });
 
-router.get('/admin', authMiddleware, (req, res) => {
-  const orders = queryAll(
+router.get('/admin', authMiddleware, async (req, res) => {
+  const orders = await queryAll(
     `SELECT o.*, t.table_number FROM orders o
      LEFT JOIN tables_tbl t ON o.table_id = t.id
      WHERE o.restaurant_id = ? ORDER BY o.created_at DESC`,
     [req.restaurant.id]
   );
   for (const order of orders) {
-    order.items = queryAll('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+    order.items = await queryAll('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
   }
   res.json(orders);
 });
 
-router.get('/:id', (req, res) => {
-  const order = queryOne(
+router.get('/:id', async (req, res) => {
+  const order = await queryOne(
     `SELECT o.*, t.table_number FROM orders o
      LEFT JOIN tables_tbl t ON o.table_id = t.id WHERE o.id = ?`,
     [req.params.id]
   );
   if (!order) return res.status(404).json({ error: 'Order not found' });
-  order.items = queryAll('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+  order.items = await queryAll('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
   res.json(order);
 });
 
-router.put('/:id/status', authMiddleware, (req, res) => {
+router.put('/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
   if (!['pending', 'preparing', 'done'].includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }
-  execute('UPDATE orders SET status = ? WHERE id = ? AND restaurant_id = ?', [status, req.params.id, req.restaurant.id]);
+  await execute('UPDATE orders SET status = ? WHERE id = ? AND restaurant_id = ?', [status, req.params.id, req.restaurant.id]);
   res.json({ success: true });
 });
 
-router.get('/stats/dashboard', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
+  await execute('DELETE FROM order_items WHERE order_id = ?', [req.params.id]);
+  await execute('DELETE FROM orders WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
+  res.json({ success: true });
+});
+
+router.delete('/done/all', authMiddleware, async (req, res) => {
+  await execute(
+    'DELETE FROM order_items WHERE order_id IN (SELECT id FROM orders WHERE restaurant_id = ? AND status = ?)',
+    [req.restaurant.id, 'done']
+  );
+  await execute('DELETE FROM orders WHERE restaurant_id = ? AND status = ?', [req.restaurant.id, 'done']);
+  res.json({ success: true });
+});
+
+router.get('/stats/dashboard', authMiddleware, async (req, res) => {
   const today = new Date().toISOString().split('T')[0];
-  const totalOrders = queryOne('SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
-  const todayStats = queryOne(
-    "SELECT COUNT(*) as count, COALESCE(SUM(total),0) as revenue FROM orders WHERE restaurant_id = ? AND date(created_at) = ?",
+  const totalOrders = await queryOne('SELECT COUNT(*)::int as count FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
+  const todayStats = await queryOne(
+    "SELECT COUNT(*)::int as count, COALESCE(SUM(total),0)::float as revenue FROM orders WHERE restaurant_id = ? AND DATE(created_at) = ?",
     [req.restaurant.id, today]
   );
-  const pendingOrders = queryOne("SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
-  const totalRevenue = queryOne('SELECT COALESCE(SUM(total),0) as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
+  const pendingOrders = await queryOne("SELECT COUNT(*)::int as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
+  const totalRevenue = await queryOne('SELECT COALESCE(SUM(total),0)::float as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
   res.json({
     totalOrders: totalOrders?.count || 0,
     todayOrders: todayStats?.count || 0,

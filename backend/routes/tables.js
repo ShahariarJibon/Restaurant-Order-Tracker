@@ -6,8 +6,8 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', authMiddleware, (req, res) => {
-  const tables = queryAll('SELECT * FROM tables_tbl WHERE restaurant_id = ? ORDER BY table_number', [req.restaurant.id]);
+router.get('/', authMiddleware, async (req, res) => {
+  const tables = await queryAll('SELECT * FROM tables_tbl WHERE restaurant_id = ? ORDER BY table_number', [req.restaurant.id]);
   res.json(tables);
 });
 
@@ -29,7 +29,7 @@ router.post('/', authMiddleware, async (req, res) => {
         qrCode = '';
       }
     }
-    execute('INSERT INTO tables_tbl (id, restaurant_id, table_number, qr_code) VALUES (?, ?, ?, ?)',
+    await execute('INSERT INTO tables_tbl (id, restaurant_id, table_number, qr_code) VALUES (?, ?, ?, ?)',
       [id, req.restaurant.id, parseInt(table_number), qrCode]);
     res.json({ id, table_number: parseInt(table_number), qr_code: qrCode, menu_url: menuUrl });
   } catch (e) {
@@ -38,8 +38,8 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-router.delete('/:id', authMiddleware, (req, res) => {
-  execute('DELETE FROM tables_tbl WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
+router.delete('/:id', authMiddleware, async (req, res) => {
+  await execute('DELETE FROM tables_tbl WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
   res.json({ success: true });
 });
 
