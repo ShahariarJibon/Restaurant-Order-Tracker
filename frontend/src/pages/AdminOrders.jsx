@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import { cacheData, getCachedData } from '../utils/dataCache';
-import { ClipboardList, Trash2 } from '../components/Icons';
+import { ClipboardList, Trash2, Download, Crown } from '../components/Icons';
 
 export default function AdminOrders() {
+  const { restaurant } = useAuth();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('pending');
   const [rates, setRates] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const currency = getSelectedCurrency();
+  const isPro = restaurant?.plan === 'pro';
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -47,6 +51,23 @@ export default function AdminOrders() {
     setOrders(prev => prev.filter(o => o.status !== 'done'));
   };
 
+  const exportExcel = async () => {
+    setExporting(true);
+    try {
+      const res = await axios.get('/api/orders/export/excel', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `order-history-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {} finally {
+      setExporting(false);
+    }
+  };
+
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
 
   const counts = {
@@ -77,6 +98,15 @@ export default function AdminOrders() {
             {f.label}
           </button>
         ))}
+        {isPro ? (
+          <button className="btn btn-sm btn-outline" onClick={exportExcel} disabled={exporting} style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+            <Download size={14} /> {exporting ? '...' : 'Excel'}
+          </button>
+        ) : (
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--gray-400)', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+            <Crown size={14} /> Pro
+          </span>
+        )}
       </div>
 
       {filter === 'done' && counts.done > 0 && (
