@@ -102,7 +102,7 @@ export default function AdminOrders() {
                 <div>
                   <div className="order-card-customer">{order.customer_name || 'Guest'}</div>
                   <div className="order-card-table">
-                    Table {order.table_number || '—'} • {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    Table {order.table_number || '—'} • {new Date(order.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
                 <span className={`badge badge-${order.status}`}>{order.status}</span>

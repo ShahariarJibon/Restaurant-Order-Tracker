@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 
 const PRO_FEATURES = [
+  { icon: '📜', name: 'History', desc: 'Order history with filters & export' },
   { icon: '📊', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
   { icon: '💳', name: 'Payments', desc: 'bKash, Nagad, card payments' },
   { icon: '🔔', name: 'Notifications', desc: 'Sound alerts, push, SMS' },

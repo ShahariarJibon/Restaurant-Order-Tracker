@@ -13,7 +13,7 @@ const STEPS = [
 
 function OrderCard({ order, rates, currency, showDone, onDone }) {
   const currentIdx = STEPS.findIndex(s => s.key === order.status);
-  const orderTime = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const orderTime = new Date(order.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const isCancelled = order.status === 'cancelled';
 
@@ -201,7 +201,7 @@ export default function OrderConfirmation() {
   if (!tableId && currentOrder) {
     const isCancelled = currentOrder.status === 'cancelled';
     const currentIdx = STEPS.findIndex(s => s.key === currentOrder.status);
-    const orderTime = new Date(currentOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const orderTime = new Date(currentOrder.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return (
       <div className="mobile-app" style={{ paddingBottom: 0 }}>
         <div className="status-screen">
