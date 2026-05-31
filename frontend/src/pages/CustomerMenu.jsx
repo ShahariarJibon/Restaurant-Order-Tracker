@@ -165,9 +165,14 @@ export default function CustomerMenu() {
       )}
 
       <div className="top-bar">
-        <div className="top-bar-left">
-          <h1>{data.restaurant?.name || 'Restaurant'}</h1>
-          <p>Table {tableId ? `#${tableId.slice(0, 4)}` : '—'}</p>
+        <div className="top-bar-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {data.restaurant?.logo && (
+            <img src={data.restaurant.logo} alt="logo" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+          )}
+          <div>
+            <h1 style={{ fontSize: 18 }}>{data.restaurant?.name || 'Restaurant'}</h1>
+            <p>Table {tableId ? `#${tableId.slice(0, 4)}` : '—'}</p>
+          </div>
         </div>
       </div>
 

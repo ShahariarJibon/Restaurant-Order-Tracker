@@ -6,18 +6,12 @@ import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../u
 export default function AdminHome({ onGoToSettings }) {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
-  const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
   const [rates, setRates] = useState(null);
   const { restaurant } = useAuth();
   const currency = getSelectedCurrency();
+  const logo = restaurant?.logo || localStorage.getItem('restaurant_logo') || '';
 
   useEffect(() => { fetchRates().then(setRates); }, []);
-
-  useEffect(() => {
-    const handler = () => setLogo(localStorage.getItem('restaurant_logo') || '');
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
-  }, []);
 
   useEffect(() => {
     axios.get('/api/orders/stats/dashboard').then(r => setStats(r.data));

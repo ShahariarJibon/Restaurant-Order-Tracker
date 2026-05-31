@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { CURRENCIES, getSelectedCurrency, getCurrencyInfo } from '../utils/currency';
+import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 
 const PRO_FEATURES = [
   { icon: '📊', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
@@ -15,7 +15,7 @@ const PRO_FEATURES = [
 ];
 
 export default function AdminSettings() {
-  const { restaurant, logout, updateCurrency } = useAuth();
+  const { restaurant, logout, updateCurrency, updateRestaurant } = useAuth();
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
@@ -26,16 +26,25 @@ export default function AdminSettings() {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
-  const handleLogoChange = (e) => {
+  const handleLogoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      setLogo(dataUrl);
-      localStorage.setItem('restaurant_logo', dataUrl);
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append('logo', file);
+    try {
+      const res = await axios.post('/api/auth/logo', formData);
+      if (res.data.logo) {
+        setLogo(res.data.logo);
+        updateRestaurant({ logo: res.data.logo });
+      }
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setLogo(ev.target.result);
+        localStorage.setItem('restaurant_logo', ev.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCurrencyChange = async (e) => {

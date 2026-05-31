@@ -56,12 +56,14 @@ export function AuthProvider({ children }) {
     setRestaurant(null);
   };
 
-  const updateCurrency = (currency) => {
-    setRestaurant(prev => prev ? { ...prev, currency } : prev);
+  const updateRestaurant = (data) => {
+    setRestaurant(prev => prev ? { ...prev, ...data } : prev);
   };
 
+  const updateCurrency = (currency) => updateRestaurant({ currency });
+
   return (
-    <AuthContext.Provider value={{ restaurant, token, loading, login, register, logout, updateCurrency }}>
+    <AuthContext.Provider value={{ restaurant, token, loading, login, register, logout, updateRestaurant, updateCurrency }}>
       {children}
     </AuthContext.Provider>
   );
