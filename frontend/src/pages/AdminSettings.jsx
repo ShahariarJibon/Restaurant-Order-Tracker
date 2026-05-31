@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 import {
   ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
-  Sun, Moon, Lock, LogOut, Star, Settings,
+  Sun, Moon, Lock, LogOut, Star, Settings, Crown, CheckCircle,
 } from '../components/Icons';
 
 const PRO_FEATURES = [
@@ -51,6 +51,8 @@ export default function AdminSettings() {
       reader.readAsDataURL(file);
     }
   };
+
+  const isPro = restaurant?.plan === 'pro';
 
   const handleCurrencyChange = async (e) => {
     const code = e.target.value;
@@ -121,12 +123,16 @@ export default function AdminSettings() {
 
       {/* Pro Features */}
       <div className="pro-section">
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Lock size={18} /> Pro Features</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isPro ? <Crown size={18} style={{ color: 'var(--yellow)' }} /> : <Lock size={18} />}
+          Pro Features
+          {isPro && <span className="super-badge pro" style={{ marginLeft: 8 }}>ACTIVE</span>}
+        </h3>
         {PRO_FEATURES.map((feat, i) => {
           const FeatIcon = feat.Icon;
           return (
-            <div key={i} className="pro-card">
-              <div className="pro-card-icon"><Lock size={20} /></div>
+            <div key={i} className="pro-card" style={{ opacity: isPro ? 1 : 0.6, filter: isPro ? 'none' : 'grayscale(0.3)' }}>
+              <div className="pro-card-icon">{isPro ? <CheckCircle size={20} style={{ color: 'var(--green)' }} /> : <Lock size={20} />}</div>
               <div className="pro-card-info">
                 <div className="pro-card-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FeatIcon size={16} /> {feat.name}</div>
                 <div className="pro-card-desc">{feat.desc}</div>
@@ -134,7 +140,11 @@ export default function AdminSettings() {
             </div>
           );
         })}
-        <button className="pro-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Star size={18} /> Upgrade to Pro</button>
+        {!isPro && (
+          <button className="pro-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Star size={18} /> Upgrade to Pro — Contact Support
+          </button>
+        )}
       </div>
     </div>
   );

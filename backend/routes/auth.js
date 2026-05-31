@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   await execute('INSERT INTO restaurants (id, name, email, password) VALUES (?, ?, ?, ?)', [id, name, email, hashedPassword]);
   const token = generateToken({ id, email, name });
-  res.json({ token, restaurant: { id, name, email, currency: 'BDT', logo: '' } });
+  res.json({ token, restaurant: { id, name, email, currency: 'BDT', logo: '', plan: 'free', status: 'active' } });
 });
 
 router.post('/login', async (req, res) => {
@@ -51,13 +51,13 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
   const token = generateToken(restaurant);
-  res.json({ token, restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '' } });
+  res.json({ token, restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '', plan: restaurant.plan || 'free', status: restaurant.status || 'active' } });
 });
 
 router.get('/me', authMiddleware, async (req, res) => {
   const restaurant = await queryOne('SELECT * FROM restaurants WHERE id = ?', [req.restaurant.id]);
   if (!restaurant) return res.status(401).json({ error: 'Not found' });
-  res.json({ restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '' } });
+  res.json({ restaurant: { id: restaurant.id, name: restaurant.name, email: restaurant.email, currency: restaurant.currency || 'BDT', logo: restaurant.logo || '', plan: restaurant.plan || 'free', status: restaurant.status || 'active' } });
 });
 
 router.put('/currency', authMiddleware, async (req, res) => {

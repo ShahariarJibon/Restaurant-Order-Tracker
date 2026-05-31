@@ -244,7 +244,9 @@ export default function CustomerMenu() {
     </>
   );
 
-  if (isDesktop) {
+  const isPremiumDesktop = isDesktop && data?.restaurant?.plan === 'pro';
+
+  if (isPremiumDesktop) {
     return (
       <>
         {offline && (

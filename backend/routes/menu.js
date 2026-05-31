@@ -34,7 +34,7 @@ router.get('/items', authMiddleware, async (req, res) => {
 });
 
 router.get('/public/:restaurantId', async (req, res) => {
-  const restaurant = await queryOne('SELECT id, name, currency, logo FROM restaurants WHERE id = ?', [req.params.restaurantId]);
+  const restaurant = await queryOne('SELECT id, name, currency, logo, plan, status FROM restaurants WHERE id = ?', [req.params.restaurantId]);
   const categories = await queryAll('SELECT * FROM categories WHERE restaurant_id = ? ORDER BY sort_order', [req.params.restaurantId]);
   const items = await queryAll('SELECT * FROM menu_items WHERE restaurant_id = ? AND available = 1', [req.params.restaurantId]);
   res.json({ restaurant, categories, items });
