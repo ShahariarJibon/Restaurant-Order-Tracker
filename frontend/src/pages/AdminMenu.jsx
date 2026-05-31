@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getSelectedCurrency, fetchRates, toUSD, convertPrice, formatPrice } from '../utils/currency';
+import { getSelectedCurrency, getCurrencyInfo, fetchRates, toUSD, convertPrice, formatPrice } from '../utils/currency';
 import { cacheData, getCachedData } from '../utils/dataCache';
 import { UtensilsCrossed, Pencil, Trash2 } from '../components/Icons';
 
