@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('pending');
+  const [rates, setRates] = useState(null);
+  const currency = getSelectedCurrency();
+
+  useEffect(() => { fetchRates().then(setRates); }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -103,7 +108,7 @@ export default function AdminOrders() {
                 </div>
               )}
               <div className="order-card-bottom">
-                <div className="order-card-total">${parseFloat(order.total).toFixed(2)}</div>
+                <div className="order-card-total">{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</div>
                 <div className="order-card-actions">
                   {order.status === 'pending' && (
                     <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>

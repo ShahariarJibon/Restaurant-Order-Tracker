@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
 
 export default function AdminHome({ onGoToSettings }) {
   const [stats, setStats] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
+  const [rates, setRates] = useState(null);
   const { restaurant } = useAuth();
+  const currency = getSelectedCurrency();
+
+  useEffect(() => { fetchRates().then(setRates); }, []);
 
   useEffect(() => {
     const handler = () => setLogo(localStorage.getItem('restaurant_logo') || '');
@@ -49,7 +54,7 @@ export default function AdminHome({ onGoToSettings }) {
           <div className="stat-card">
             <div className="stat-icon">💰</div>
             <h3>Today's Revenue</h3>
-            <div className="stat-value orange">${stats.todayRevenue?.toFixed(2)}</div>
+            <div className="stat-value orange">{rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${stats.todayRevenue?.toFixed(2)}`}</div>
           </div>
           <div className="stat-card">
             <div className="stat-icon">⏳</div>
@@ -84,7 +89,7 @@ export default function AdminHome({ onGoToSettings }) {
                   <span className={`badge badge-${order.status}`}>{order.status}</span>
                 </div>
                 <div className="order-card-bottom">
-                  <div className="order-card-total">${parseFloat(order.total).toFixed(2)}</div>
+                  <div className="order-card-total">{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</div>
                   <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>#{order.id.slice(0, 6)}</span>
                 </div>
               </div>

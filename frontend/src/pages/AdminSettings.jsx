@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 
 const PRO_FEATURES = [
   { icon: '📊', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
@@ -17,6 +18,7 @@ export default function AdminSettings() {
   const stored = localStorage.getItem('theme') === 'dark';
   const [darkMode, setDarkMode] = useState(stored);
   const [logo, setLogo] = useState(localStorage.getItem('restaurant_logo') || '');
+  const [currency, setCurrency] = useState(getSelectedCurrency());
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
@@ -33,6 +35,11 @@ export default function AdminSettings() {
       localStorage.setItem('restaurant_logo', dataUrl);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCurrencyChange = (code) => {
+    setCurrency(code);
+    localStorage.setItem('currency', code);
   };
 
   return (
@@ -55,7 +62,7 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Dark Mode Toggle */}
+      {/* Dark Mode */}
       <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 22 }}>{darkMode ? '🌙' : '☀️'}</span>
@@ -68,6 +75,26 @@ export default function AdminSettings() {
           <input type="checkbox" checked={darkMode} onChange={e => setDarkMode(e.target.checked)} />
           <span className="slider" />
         </label>
+      </div>
+
+      {/* Currency */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 12 }}>Currency</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {CURRENCIES.map(c => (
+            <button
+              key={c.code}
+              onClick={() => handleCurrencyChange(c.code)}
+              style={{
+                padding: '8px 14px', borderRadius: 10, border: `2px solid ${currency === c.code ? 'var(--orange)' : 'var(--gray-200)'}`,
+                background: currency === c.code ? 'var(--orange-light)' : 'var(--white)',
+                color: 'var(--gray-900)', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4
+              }}
+            >
+              <span>{c.flag}</span> {c.code}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="settings-list" style={{ marginBottom: 20 }}>

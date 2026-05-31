@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { CURRENCIES, getSelectedCurrency, getCurrencyInfo, fetchRates, convertPrice, toUSD, formatPrice } from '../utils/currency';
 
 export default function AdminMenu() {
   const [items, setItems] = useState([]);
@@ -10,6 +11,11 @@ export default function AdminMenu() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', price: '', description: '', category_id: '', image: '' });
   const [catName, setCatName] = useState('');
+  const [rates, setRates] = useState(null);
+  const currency = getSelectedCurrency();
+  const currencyInfo = getCurrencyInfo(currency);
+
+  useEffect(() => { fetchRates().then(setRates); }, []);
 
   const load = async () => {
     const [ir, cr] = await Promise.all([
@@ -24,7 +30,8 @@ export default function AdminMenu() {
 
   const openEdit = (item) => {
     setEditing(item);
-    setForm({ name: item.name, price: item.price, description: item.description || '', category_id: item.category_id || '', image: item.image || '' });
+    const converted = rates ? convertPrice(parseFloat(item.price), currency, rates) : item.price;
+    setForm({ name: item.name, price: converted.toFixed(2), description: item.description || '', category_id: item.category_id || '', image: item.image || '' });
     setShowForm(true);
   };
 
@@ -36,7 +43,8 @@ export default function AdminMenu() {
 
   const handleSave = async () => {
     try {
-      const payload = { ...form, price: parseFloat(form.price) };
+      const usdPrice = rates ? toUSD(parseFloat(form.price), currency, rates) : parseFloat(form.price);
+      const payload = { ...form, price: usdPrice };
       if (editing) {
         await axios.put(`/api/menu/items/${editing.id}`, payload);
       } else {
@@ -112,7 +120,7 @@ export default function AdminMenu() {
               <div className="menu-list-info">
                 <div className="menu-list-name">{item.name}</div>
                 <div className="menu-list-category">{getCatName(item.category_id)}</div>
-                <div className="menu-list-price">${parseFloat(item.price).toFixed(2)}</div>
+                <div className="menu-list-price">{rates ? formatPrice(parseFloat(item.price), currency, rates) : `$${parseFloat(item.price).toFixed(2)}`}</div>
               </div>
               <div className="menu-list-toggle">
                 <label className="toggle">
@@ -141,7 +149,7 @@ export default function AdminMenu() {
               <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Item name" />
             </div>
             <div className="form-group">
-              <label>Price ($)</label>
+              <label>Price ({currencyInfo.symbol})</label>
               <input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="0.00" />
             </div>
             <div className="form-group">

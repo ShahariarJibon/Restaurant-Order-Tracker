@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
 
 const STEPS = [
   { key: 'pending', label: 'Order Placed' },
@@ -11,6 +12,10 @@ const STEPS = [
 export default function OrderConfirmation() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
+  const [rates, setRates] = useState(null);
+  const currency = getSelectedCurrency();
+
+  useEffect(() => { fetchRates().then(setRates); }, []);
 
   useEffect(() => {
     if (!orderId) return;
@@ -89,12 +94,12 @@ export default function OrderConfirmation() {
             {order.items?.map(item => (
               <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 14 }}>
                 <span>{item.item_name} × {item.quantity}</span>
-                <span style={{ fontWeight: 600 }}>${(item.price * item.quantity).toFixed(2)}</span>
+                <span style={{ fontWeight: 600 }}>{rates ? formatPrice(item.price * item.quantity, currency, rates) : `$${(item.price * item.quantity).toFixed(2)}`}</span>
               </div>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--gray-200)', marginTop: 8, paddingTop: 8, fontWeight: 700, fontSize: 16 }}>
               <span>Total</span>
-              <span style={{ color: 'var(--orange)' }}>${parseFloat(order.total).toFixed(2)}</span>
+              <span style={{ color: 'var(--orange)' }}>{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</span>
             </div>
           </div>
         )}

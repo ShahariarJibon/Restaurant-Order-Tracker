@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
 
-function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose }) {
+function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
   const updateQty = (id, delta) => {
     setCart(prev => {
       const next = prev.map(c => c.id === id ? { ...c, quantity: Math.max(0, c.quantity + delta) } : c);
@@ -22,7 +23,7 @@ function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder,
           <div key={item.id} className="cart-item">
             <div className="cart-item-info">
               <div className="cart-item-name">{item.name}</div>
-              <div className="cart-item-price">${parseFloat(item.price).toFixed(2)}</div>
+              <div className="cart-item-price">{rates ? formatPrice(item.price, currency, rates) : `$${parseFloat(item.price).toFixed(2)}`}</div>
             </div>
             <div className="cart-qty">
               <button onClick={() => updateQty(item.id, -1)}>−</button>
@@ -40,7 +41,7 @@ function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder,
         </div>
         <div className="cart-total-row">
           <span>Total</span>
-          <span>${total.toFixed(2)}</span>
+          <span>{rates ? formatPrice(total, currency, rates) : `$${total.toFixed(2)}`}</span>
         </div>
         <button
           className="btn btn-primary btn-lg"
@@ -68,9 +69,11 @@ export default function CustomerMenu() {
   const [customerName, setCustomerName] = useState('');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
-  const lastOrderId = localStorage.getItem('lastOrderId');
-  const lastRestaurantId = localStorage.getItem('lastRestaurantId');
   const [offline, setOffline] = useState(!navigator.onLine);
+  const [rates, setRates] = useState(null);
+  const currency = getSelectedCurrency();
+
+  useEffect(() => { fetchRates().then(setRates); }, []);
 
   useEffect(() => {
     const handleOnline = () => setOffline(false);
@@ -191,7 +194,7 @@ export default function CustomerMenu() {
               <div className="food-card-name">{item.name}</div>
               {item.description && <div className="food-card-desc">{item.description}</div>}
               <div className="food-card-bottom">
-                <span className="food-card-price">${parseFloat(item.price).toFixed(2)}</span>
+                <span className="food-card-price">{rates ? formatPrice(parseFloat(item.price), currency, rates) : `$${parseFloat(item.price).toFixed(2)}`}</span>
                 <button
                   className="food-card-add"
                   onClick={e => { e.stopPropagation(); addToCart(item); }}
@@ -218,8 +221,8 @@ export default function CustomerMenu() {
           <span className="floating-cart-badge">{cartCount}</span>
         </button>
       )}
-      {cartCount === 0 && lastOrderId && lastRestaurantId === restaurantId && (
-        <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${lastOrderId}?table=${localStorage.getItem('lastTableId') || ''}`)}>
+      {cartCount === 0 && localStorage.getItem('lastOrderId') && localStorage.getItem('lastRestaurantId') === restaurantId && (
+        <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${localStorage.getItem('lastOrderId')}?table=${localStorage.getItem('lastTableId') || ''}`)}>
           📋
           <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
@@ -234,6 +237,8 @@ export default function CustomerMenu() {
           onPlaceOrder={handlePlaceOrder}
           placing={placing}
           onClose={() => setShowCart(false)}
+          rates={rates}
+          currency={currency}
         />
       )}
     </div>
