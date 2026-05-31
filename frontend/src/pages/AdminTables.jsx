@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { cacheData, getCachedData } from '../utils/dataCache';
+import { QrCode, Trash2 } from '../components/Icons';
 
 const downloadQR = (imgSrc, tableNum) => {
   const img = new Image();
@@ -82,7 +83,7 @@ export default function AdminTables() {
 
       {tables.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🪑</div>
+          <div className="empty-icon"><QrCode size={40} /></div>
           <h3>No tables yet</h3>
           <p>Add a table to generate its QR menu</p>
         </div>
@@ -103,7 +104,7 @@ export default function AdminTables() {
                 ) : (
                   <span style={{ color: 'var(--gray-300)', fontSize: 12 }}>—</span>
                 )}
-                <button className="btn btn-danger btn-sm" onClick={() => removeTable(table.id)}>🗑️</button>
+                <button className="btn btn-danger btn-sm" onClick={() => removeTable(table.id)}><Trash2 size={16} /></button>
               </div>
             </div>
           ))}

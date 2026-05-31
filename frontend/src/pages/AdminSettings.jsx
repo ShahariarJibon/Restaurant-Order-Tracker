@@ -2,17 +2,21 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
+import {
+  ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
+  Sun, Moon, Lock, LogOut, Star, Settings,
+} from '../components/Icons';
 
 const PRO_FEATURES = [
-  { icon: '📜', name: 'History', desc: 'Order history with filters & export' },
-  { icon: '📊', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
-  { icon: '💳', name: 'Payments', desc: 'bKash, Nagad, card payments' },
-  { icon: '🔔', name: 'Notifications', desc: 'Sound alerts, push, SMS' },
-  { icon: '👨‍🍳', name: 'Staff Management', desc: 'Multiple accounts with roles' },
-  { icon: '📦', name: 'Inventory', desc: 'Track ingredients & stock' },
-  { icon: '🎁', name: 'Loyalty Program', desc: 'Points, coupons, promos' },
-  { icon: '🧾', name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
-  { icon: '🤖', name: 'AI Features', desc: 'Smart suggestions & predictions' },
+  { Icon: ScrollText, name: 'History', desc: 'Order history with filters & export' },
+  { Icon: BarChart3, name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
+  { Icon: CreditCard, name: 'Payments', desc: 'bKash, Nagad, card payments' },
+  { Icon: Bell, name: 'Notifications', desc: 'Sound alerts, push, SMS' },
+  { Icon: Users, name: 'Staff Management', desc: 'Multiple accounts with roles' },
+  { Icon: Package, name: 'Inventory', desc: 'Track ingredients & stock' },
+  { Icon: Gift, name: 'Loyalty Program', desc: 'Points, coupons, promos' },
+  { Icon: FileText, name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
+  { Icon: Bot, name: 'AI Features', desc: 'Smart suggestions & predictions' },
 ];
 
 export default function AdminSettings() {
@@ -81,7 +85,7 @@ export default function AdminSettings() {
       {/* Dark Mode */}
       <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 22 }}>{darkMode ? '🌙' : '☀️'}</span>
+          {darkMode ? <Moon size={22} /> : <Sun size={22} />}
           <div>
             <div style={{ fontWeight: 600, fontSize: 15 }}>Dark Mode</div>
             <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>{darkMode ? 'On' : 'Off'}</div>
@@ -109,7 +113,7 @@ export default function AdminSettings() {
 
       <div className="settings-list" style={{ marginBottom: 20 }}>
         <button className="settings-item" onClick={logout}>
-          <span className="si-icon">🚪</span>
+          <span className="si-icon"><LogOut size={20} /></span>
           <span className="si-label">Sign Out</span>
           <span className="si-arrow">›</span>
         </button>
@@ -117,17 +121,20 @@ export default function AdminSettings() {
 
       {/* Pro Features */}
       <div className="pro-section">
-        <h3>🔒 Pro Features</h3>
-        {PRO_FEATURES.map((feat, i) => (
-          <div key={i} className="pro-card">
-            <div className="pro-card-icon">🔒</div>
-            <div className="pro-card-info">
-              <div className="pro-card-name">{feat.icon} {feat.name}</div>
-              <div className="pro-card-desc">{feat.desc}</div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Lock size={18} /> Pro Features</h3>
+        {PRO_FEATURES.map((feat, i) => {
+          const FeatIcon = feat.Icon;
+          return (
+            <div key={i} className="pro-card">
+              <div className="pro-card-icon"><Lock size={20} /></div>
+              <div className="pro-card-info">
+                <div className="pro-card-name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FeatIcon size={16} /> {feat.name}</div>
+                <div className="pro-card-desc">{feat.desc}</div>
+              </div>
             </div>
-          </div>
-        ))}
-        <button className="pro-cta">⭐ Upgrade to Pro</button>
+          );
+        })}
+        <button className="pro-cta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Star size={18} /> Upgrade to Pro</button>
       </div>
     </div>
   );

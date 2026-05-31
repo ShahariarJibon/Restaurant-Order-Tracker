@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
+import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle } from '../components/Icons';
 
 function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
   const updateQty = (id, delta) => {
@@ -137,7 +138,7 @@ export default function CustomerMenu() {
   if (error === 'Restaurant not found') {
     return (
       <div className="status-screen">
-        <div className="status-icon placed" style={{ fontSize: 40 }}>🍽️</div>
+        <div className="status-icon placed"><UtensilsCrossed size={40} /></div>
         <h1>Restaurant Not Found</h1>
         <p className="sub">The menu you're looking for doesn't exist.</p>
       </div>
@@ -160,7 +161,7 @@ export default function CustomerMenu() {
     <div className="mobile-app">
       {offline && (
         <div className="offline-banner">
-          📡 Offline mode — will sync automatically
+          <WifiOff size={16} /> Offline mode — will sync automatically
         </div>
       )}
 
@@ -198,7 +199,7 @@ export default function CustomerMenu() {
         {filteredItems.map(item => (
           <div key={item.id} className="food-card" onClick={() => addToCart(item)}>
             <div className="food-card-img">
-              {item.image ? <img src={item.image} alt={item.name} /> : '🍽️'}
+              {item.image ? <img src={item.image} alt={item.name} /> : <UtensilsCrossed size={24} />}
             </div>
             <div className="food-card-body">
               <div className="food-card-name">{item.name}</div>
@@ -219,7 +220,7 @@ export default function CustomerMenu() {
 
       {filteredItems.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">🍽️</div>
+          <div className="empty-icon"><UtensilsCrossed size={40} /></div>
           <h3>No items yet</h3>
           <p>Check back soon for new menu items</p>
         </div>
@@ -227,16 +228,17 @@ export default function CustomerMenu() {
 
       {cartCount > 0 && (
         <button className="floating-cart" onClick={() => setShowCart(true)}>
-          🛒
+          <ShoppingCart size={24} />
           <span className="floating-cart-badge">{cartCount}</span>
         </button>
       )}
       {cartCount === 0 && localStorage.getItem('lastOrderId') && localStorage.getItem('lastRestaurantId') === restaurantId && (
         <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${localStorage.getItem('lastOrderId')}?table=${localStorage.getItem('lastTableId') || ''}`)}>
-          📋
+          <ClipboardList size={24} />
           <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
       )}
+
 
       {showCart && (
         <CartPanel

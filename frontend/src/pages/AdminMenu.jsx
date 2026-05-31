@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { getSelectedCurrency, getCurrencyInfo, fetchRates, convertPrice, toUSD, formatPrice } from '../utils/currency';
+import { useAuth } from '../context/AuthContext';
+import { getSelectedCurrency, fetchRates, toUSD, convertPrice, formatPrice } from '../utils/currency';
 import { cacheData, getCachedData } from '../utils/dataCache';
+import { UtensilsCrossed, Pencil, Trash2 } from '../components/Icons';
 
 export default function AdminMenu() {
   const [items, setItems] = useState([]);
@@ -116,7 +118,7 @@ export default function AdminMenu() {
 
       {items.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🍽️</div>
+          <div className="empty-icon"><UtensilsCrossed size={40} /></div>
           <h3>No menu items</h3>
           <p>Tap the + button to add your first item</p>
         </div>
@@ -125,7 +127,7 @@ export default function AdminMenu() {
           {items.map(item => (
             <div key={item.id} className="menu-list-item">
               <div className="menu-list-img">
-                {item.image ? <img src={item.image} alt="" /> : '🍽️'}
+                {item.image ? <img src={item.image} alt="" /> : <UtensilsCrossed size={24} />}
               </div>
               <div className="menu-list-info">
                 <div className="menu-list-name">{item.name}</div>
@@ -139,8 +141,8 @@ export default function AdminMenu() {
                 </label>
               </div>
               <div className="menu-list-actions">
-                <button className="btn btn-outline btn-sm" style={{ padding: '6px 10px', minHeight: 36 }} onClick={() => openEdit(item)}>✏️</button>
-                <button className="btn btn-danger btn-sm" style={{ padding: '6px 10px', minHeight: 36 }} onClick={() => handleDelete(item.id)}>🗑️</button>
+                <button className="btn btn-outline btn-sm" style={{ padding: '6px 10px', minHeight: 36 }} onClick={() => openEdit(item)}><Pencil size={16} /></button>
+                <button className="btn btn-danger btn-sm" style={{ padding: '6px 10px', minHeight: 36 }} onClick={() => handleDelete(item.id)}><Trash2 size={16} /></button>
               </div>
             </div>
           ))}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
+import { XCircle, CheckCircle, ChefHat, ClipboardList, RefreshCw, UtensilsCrossed } from '../components/Icons';
 
 const RATING_CACHE_KEY = (tableId) => `rated_table_${tableId}`;
 
@@ -40,7 +41,7 @@ function OrderCard({ order, rates, currency, showDone, onDone }) {
       </div>
       {isCancelled ? (
         <div style={{ textAlign: 'center', padding: '12px 0', color: '#DC2626', fontWeight: 700, fontSize: 15 }}>
-          ⛔ Order Cancelled
+          <XCircle size={18} /> Order Cancelled
         </div>
       ) : (
         <>
@@ -207,7 +208,7 @@ export default function OrderConfirmation() {
         <div className="status-screen">
           <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 2, marginBottom: 8 }}>ORDER PLACED</h1>
           <div className={`status-icon ${currentOrder.status === 'done' && !isCancelled ? 'placed' : ''}`} style={{ background: isCancelled ? '#FEE2E2' : currentOrder.status === 'done' ? 'var(--green-light)' : 'var(--orange-light)' }}>
-            {isCancelled ? '⛔' : currentOrder.status === 'done' ? '✅' : currentOrder.status === 'preparing' ? '👨‍🍳' : '📋'}
+            {isCancelled ? <XCircle size={36} /> : currentOrder.status === 'done' ? <CheckCircle size={36} /> : currentOrder.status === 'preparing' ? <ChefHat size={36} /> : <ClipboardList size={36} />}
           </div>
           {isCancelled ? (
             <>
@@ -254,7 +255,7 @@ export default function OrderConfirmation() {
               </div>
             </div>
           )}
-          <p style={{ marginTop: 24, fontSize: 13, color: 'var(--gray-400)' }}>Thank you for your order! 🍽️</p>
+          <p style={{ marginTop: 24, fontSize: 13, color: 'var(--gray-400)' }}>Thank you for your order!</p>
         </div>
       </div>
     );
@@ -283,13 +284,13 @@ export default function OrderConfirmation() {
             className="btn btn-outline btn-sm"
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            🔄 Change Table #{currentOrder?.table_number || '—'}
+            <RefreshCw size={16} /> Change Table #{currentOrder?.table_number || '—'}
           </button>
         </div>
 
         {activeCount === 0 && tableOrders.length > 0 && !hasCancelled && (
           <>
-            <div className={`status-icon placed`} style={{ background: 'var(--green-light)' }}>✅</div>
+            <div className={`status-icon placed`} style={{ background: 'var(--green-light)' }}><CheckCircle size={36} /></div>
             <h1>Enjoy Your Meal!</h1>
             <p className="sub">All orders are ready. Bon appétit!</p>
           </>
@@ -301,7 +302,7 @@ export default function OrderConfirmation() {
             padding: '12px 16px', marginBottom: 16, width: '100%', maxWidth: 320,
             display: 'flex', alignItems: 'center', gap: 10, color: '#DC2626', fontWeight: 700
           }}>
-            ⛔ Some orders were cancelled by the restaurant
+            <XCircle size={18} /> Some orders were cancelled by the restaurant
           </div>
         )}
 
@@ -320,7 +321,7 @@ export default function OrderConfirmation() {
 
         {tableOrders.length > 0 && (
           <p style={{ marginTop: 20, fontSize: 13, color: 'var(--gray-400)' }}>
-            Thank you for your order! 🍽️
+Thank you for your order!
           </p>
         )}
       </div>

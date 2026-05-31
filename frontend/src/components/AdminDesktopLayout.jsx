@@ -2,56 +2,42 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
+import {
+  LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
+  DollarSign, Hourglass, LogOut, Star,
+} from './Icons';
 
 const NAV = [
-  { key: 'home', label: 'Home', icon: '🏠' },
-  { key: 'orders', label: 'Orders', icon: '📋' },
-  { key: 'menu', label: 'Menu', icon: '🍽️' },
-  { key: 'tables', label: 'Tables', icon: '🪑' },
-  { key: 'settings', label: 'Settings', icon: '⚙️' },
+  { key: 'home', label: 'Home', Icon: LayoutDashboard },
+  { key: 'orders', label: 'Orders', Icon: ClipboardList },
+  { key: 'menu', label: 'Menu', Icon: UtensilsCrossed },
+  { key: 'tables', label: 'Tables', Icon: QrCode },
+  { key: 'settings', label: 'Settings', Icon: Settings },
 ];
 
 function RightPanelOverview({ activeTab }) {
   const [pendingCount, setPendingCount] = useState(0);
-  const { restaurant } = useAuth();
 
   useEffect(() => {
     axios.get('/api/orders/admin').then(r => setPendingCount(r.data.filter(o => o.status === 'pending').length)).catch(() => {});
   }, []);
 
   const panels = {
-    home: {
-      icon: '🏠',
-      title: 'Dashboard',
-      lines: ['Overview of your restaurant', 'Real-time stats & insights'],
-    },
-    orders: {
-      icon: '📋',
-      title: 'Order Management',
-      lines: [`${pendingCount} pending orders`, 'Click an order to manage'],
-    },
-    menu: {
-      icon: '🍽️',
-      title: 'Menu Builder',
-      lines: ['Manage items & categories', 'Toggle availability'],
-    },
-    tables: {
-      icon: '🪑',
-      title: 'Tables & QR',
-      lines: ['Add or remove tables', 'Generate QR codes'],
-    },
-    settings: {
-      icon: '⚙️',
-      title: 'Restaurant Settings',
-      lines: ['Theme, currency, logo', 'Upgrade to Pro'],
-    },
+    home: { Icon: LayoutDashboard, title: 'Dashboard', lines: ['Overview of your restaurant', 'Real-time stats & insights'] },
+    orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
+    menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
+    tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
+    settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
   };
 
   const p = panels[activeTab] || panels.home;
+  const PanelIcon = p.Icon;
 
   return (
     <div style={{ padding: 20 }}>
-      <div style={{ fontSize: 48, marginBottom: 12 }}>{p.icon}</div>
+      <div style={{ marginBottom: 12, color: 'var(--orange)' }}>
+        <PanelIcon size={48} strokeWidth={1.5} />
+      </div>
       <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: 'var(--gray-900)' }}>{p.title}</h3>
       {p.lines.map((l, i) => (
         <p key={i} style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 4 }}>{l}</p>
@@ -107,24 +93,27 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
         </div>
 
         <nav className="sidebar-nav">
-          {NAV.map(tab => (
-            <button
-              key={tab.key}
-              className={`sidebar-nav-item ${activeTab === tab.key ? 'active' : ''}`}
-              onClick={() => onTabChange(tab.key)}
-            >
-              <span className="sidebar-nav-icon">{tab.icon}</span>
-              <span className="sidebar-nav-label">{tab.label}</span>
-              {tab.key === 'orders' && pendingCount > 0 && (
-                <span className="sidebar-badge">{pendingCount}</span>
-              )}
-            </button>
-          ))}
+          {NAV.map(tab => {
+            const TabIcon = tab.Icon;
+            return (
+              <button
+                key={tab.key}
+                className={`sidebar-nav-item ${activeTab === tab.key ? 'active' : ''}`}
+                onClick={() => onTabChange(tab.key)}
+              >
+                <span className="sidebar-nav-icon"><TabIcon size={18} /></span>
+                <span className="sidebar-nav-label">{tab.label}</span>
+                {tab.key === 'orders' && pendingCount > 0 && (
+                  <span className="sidebar-badge">{pendingCount}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">
           <button className="sidebar-nav-item" onClick={logout}>
-            <span className="sidebar-nav-icon">🚪</span>
+            <span className="sidebar-nav-icon"><LogOut size={18} /></span>
             <span className="sidebar-nav-label">Sign Out</span>
           </button>
         </div>
@@ -140,11 +129,15 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
           <div className="topbar-right">
             {stats && (
               <div className="topbar-stats">
-                <span className="topbar-stat">
-                  💰 {rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${Number(stats.todayRevenue).toFixed(2)}`}
+                <span className="topbar-stat" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <DollarSign size={14} /> {rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${Number(stats.todayRevenue).toFixed(2)}`}
                 </span>
-                <span className="topbar-stat">📋 {stats.totalOrders}</span>
-                <span className="topbar-stat">⏳ {stats.pendingOrders}</span>
+                <span className="topbar-stat" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <ClipboardList size={14} /> {stats.totalOrders}
+                </span>
+                <span className="topbar-stat" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Hourglass size={14} /> {stats.pendingOrders}
+                </span>
               </div>
             )}
             <div className="topbar-profile" onClick={() => setProfileOpen(!profileOpen)}>
@@ -157,11 +150,11 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{restaurant?.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{restaurant?.email}</div>
                   </div>
-                  <button onClick={() => { onTabChange('settings'); setProfileOpen(false); }} style={{ width: '100%', padding: '10px 16px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}>
-                    ⚙️ Settings
+                  <button onClick={() => { onTabChange('settings'); setProfileOpen(false); }} style={{ width: '100%', padding: '10px 16px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Settings size={16} /> Settings
                   </button>
-                  <button onClick={logout} style={{ width: '100%', padding: '10px 16px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', color: '#EF4444' }}>
-                    🚪 Sign Out
+                  <button onClick={logout} style={{ width: '100%', padding: '10px 16px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 8, color: '#EF4444' }}>
+                    <LogOut size={16} /> Sign Out
                   </button>
                 </div>
               )}

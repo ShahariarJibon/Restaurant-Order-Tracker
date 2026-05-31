@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import { cacheData, getCachedData } from '../utils/dataCache';
+import { ClipboardList, Trash2 } from '../components/Icons';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -84,13 +85,13 @@ export default function AdminOrders() {
           style={{ marginBottom: 12, width: '100%' }}
           onClick={deleteAllDone}
         >
-          🗑️ Delete All Done Orders
+          <Trash2 size={16} /> Delete All Done Orders
         </button>
       )}
 
       {filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📋</div>
+          <div className="empty-icon"><ClipboardList size={40} /></div>
           <h3>No {filter} orders</h3>
           <p>Orders appear here when customers place them</p>
         </div>
@@ -134,7 +135,7 @@ export default function AdminOrders() {
                   )}
                   {order.status === 'done' && (
                     <button className="btn btn-sm btn-danger" onClick={() => deleteOrder(order.id)}>
-                      🗑️
+                      <Trash2 size={16} />
                     </button>
                   )}
                 </div>

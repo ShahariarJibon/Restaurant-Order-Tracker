@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings } from './Icons';
 
 const TABS = [
-  { key: 'home', label: 'Home', icon: '🏠' },
-  { key: 'orders', label: 'Orders', icon: '📋' },
-  { key: 'menu', label: 'Menu', icon: '🍽️' },
-  { key: 'tables', label: 'Tables', icon: '🪑' },
-  { key: 'settings', label: 'Settings', icon: '⚙️' },
+  { key: 'home', label: 'Home', Icon: LayoutDashboard },
+  { key: 'orders', label: 'Orders', Icon: ClipboardList },
+  { key: 'menu', label: 'Menu', Icon: UtensilsCrossed },
+  { key: 'tables', label: 'Tables', Icon: QrCode },
+  { key: 'settings', label: 'Settings', Icon: Settings },
 ];
 
 export default function AdminMobileLayout({ activeTab, onTabChange, children }) {
@@ -28,21 +29,24 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
     <div className="admin-app">
       {children}
       <nav className="bottom-nav">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            className={`nav-item ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => onTabChange(tab.key)}
-          >
-            <span className="nav-icon" style={{ position: 'relative' }}>
-              {tab.icon}
-              {tab.key === 'orders' && pendingCount > 0 && (
-                <span className="nav-badge" />
-              )}
-            </span>
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map(tab => {
+          const Icon = tab.Icon;
+          return (
+            <button
+              key={tab.key}
+              className={`nav-item ${activeTab === tab.key ? 'active' : ''}`}
+              onClick={() => onTabChange(tab.key)}
+            >
+              <span className="nav-icon" style={{ position: 'relative' }}>
+                <Icon size={20} />
+                {tab.key === 'orders' && pendingCount > 0 && (
+                  <span className="nav-badge" />
+                )}
+              </span>
+              {tab.label}
+            </button>
+          );
+        })}
       </nav>
     </div>
   );
