@@ -116,6 +116,8 @@ export default function OrderConfirmation() {
       } catch {}
     };
     load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
   }, [orderId]);
 
   useEffect(() => {
@@ -139,6 +141,13 @@ export default function OrderConfirmation() {
   }, [currentOrder?.restaurant_id]);
 
   useEffect(() => {
+    if (!tableId && currentOrder?.status === 'done') {
+      const alreadyRated = ratingSubmitted || localStorage.getItem(RATING_CACHE_KEY('single'));
+      if (!alreadyRated) {
+        setShowRating(true);
+      }
+      return;
+    }
     const allDone = tableOrders.length > 0 && tableOrders.every(o => o.status === 'done' || o.status === 'cancelled');
     if (allDone) {
       localStorage.removeItem('lastOrderId');
@@ -149,7 +158,7 @@ export default function OrderConfirmation() {
         setShowRating(true);
       }
     }
-  }, [tableOrders, tableId, ratingSubmitted]);
+  }, [tableOrders, tableId, ratingSubmitted, currentOrder?.status]);
 
   const handleChangeTable = async (newTableId) => {
     try {
@@ -180,6 +189,7 @@ export default function OrderConfirmation() {
         rating: star
       });
       if (tableId) localStorage.setItem(RATING_CACHE_KEY(tableId), '1');
+      else localStorage.setItem(RATING_CACHE_KEY('single'), '1');
       setRatingSubmitted(true);
     } catch {}
     setShowRating(false);
@@ -257,6 +267,38 @@ export default function OrderConfirmation() {
           )}
           <p style={{ marginTop: 24, fontSize: 13, color: 'var(--gray-400)' }}>Thank you for your order!</p>
         </div>
+
+        {showRating && (
+          <div className="modal-overlay" onClick={handleDismissRating}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{
+              maxWidth: 320, textAlign: 'center', padding: '32px 24px'
+            }}>
+              <h2 style={{ fontSize: 20, marginBottom: 4 }}>Rate Your Experience</h2>
+              <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 20 }}>
+                How was your meal today?
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button
+                    key={star}
+                    onClick={() => { if (!submittingRating) { setSelectedStar(star); handleSubmitRating(star); } }}
+                    onMouseEnter={() => setHoveredStar(star)}
+                    onMouseLeave={() => setHoveredStar(0)}
+                    style={{
+                      background: 'none', border: 'none', fontSize: 36, cursor: submittingRating ? 'default' : 'pointer',
+                      color: (hoveredStar || selectedStar) >= star ? '#FFC107' : 'var(--gray-300)',
+                      transition: 'color 0.15s', padding: '0 2px'
+                    }}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              {submittingRating && <p style={{ fontSize: 13, color: 'var(--gray-400)' }}>Submitting...</p>}
+              <p style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap a star to rate, or tap outside to dismiss</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
