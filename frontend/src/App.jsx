@@ -20,6 +20,7 @@ import SuperAdminSubscriptions from './pages/SuperAdminSubscriptions';
 import SuperAdminReports from './pages/SuperAdminReports';
 import SuperAdminSettings from './pages/SuperAdminSettings';
 import UpgradeToPro from './pages/UpgradeToPro';
+import AdminAnalytics from './pages/AdminAnalytics';
 
 function ProtectedAdmin() {
   const { restaurant, loading } = useAuth();
@@ -42,12 +43,15 @@ function ProtectedAdmin() {
 
   if (!restaurant) return <Navigate to="/login" />;
 
+  const isPro = restaurant?.plan === 'pro';
+
   const renderTab = () => {
     switch (activeTab) {
       case 'home': return <AdminHome onGoToSettings={() => setActiveTab('settings')} onGoToUpgrade={() => setActiveTab('upgrade')} />;
       case 'orders': return <AdminOrders />;
       case 'menu': return <AdminMenu />;
       case 'tables': return <AdminTables />;
+      case 'analytics': return isPro ? <AdminAnalytics /> : <Navigate to="/" />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: return <AdminHome />;
@@ -56,7 +60,7 @@ function ProtectedAdmin() {
 
   const Layout = isDesktop ? AdminDesktopLayout : AdminMobileLayout;
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+    <Layout activeTab={activeTab} onTabChange={setActiveTab} isPro={isPro}>
       {renderTab()}
     </Layout>
   );
