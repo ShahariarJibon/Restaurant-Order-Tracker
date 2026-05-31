@@ -3,6 +3,13 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
+const CARD_STYLES = [
+  { bg: 'linear-gradient(135deg, #FF8C42, #FFB366)', icon: '💰', label: "Today's Revenue", key: 'todayRevenue', format: 'price' },
+  { bg: 'linear-gradient(135deg, #6366F1, #818CF8)', icon: '📋', label: 'Total Orders', key: 'totalOrders', format: 'number' },
+  { bg: 'linear-gradient(135deg, #F59E0B, #FBBF24)', icon: '⏳', label: 'Pending Orders', key: 'pendingOrders', format: 'number' },
+  { bg: 'linear-gradient(135deg, #10B981, #34D399)', icon: '⭐', label: 'Average Rating', key: 'averageRating', format: 'rating' },
+];
+
 export default function AdminHome({ onGoToSettings }) {
   const [stats, setStats] = useState(null);
   const [rates, setRates] = useState(null);
@@ -16,54 +23,71 @@ export default function AdminHome({ onGoToSettings }) {
     axios.get('/api/orders/stats/dashboard').then(r => setStats(r.data));
   }, []);
 
-  const avgRating = stats?.averageRating || 0;
+  const getValue = (card) => {
+    if (!stats) return '—';
+    const raw = stats[card.key] ?? 0;
+    if (card.format === 'price') {
+      return rates ? formatPrice(raw, currency, rates) : `$${Number(raw).toFixed(2)}`;
+    }
+    if (card.format === 'rating') {
+      return Number(raw) > 0 ? `${Number(raw).toFixed(1)} ★` : 'No ratings';
+    }
+    return raw;
+  };
 
   return (
-    <div className="tab-content">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+    <div className="tab-content" style={{ padding: '20px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
         <button
           onClick={onGoToSettings}
           style={{
-            width: 48, height: 48, borderRadius: '50%', border: '2px solid var(--orange)',
+            width: 52, height: 52, borderRadius: '50%', border: '3px solid var(--orange)',
             background: 'var(--orange-light)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: 22, fontWeight: 700, color: 'var(--orange)',
-            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', overflow: 'hidden', padding: 0
+            justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'var(--orange)',
+            cursor: 'pointer', flexShrink: 0, fontFamily: 'inherit', overflow: 'hidden', padding: 0,
+            boxShadow: '0 2px 12px rgba(255,140,66,0.25)'
           }}
         >
           {logo ? <img src={logo} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (restaurant?.name?.[0]?.toUpperCase() || 'R')}
         </button>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>Hi, {restaurant?.name?.split(' ')[0] || 'there'} 👋</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>Welcome back, {restaurant?.name?.split(' ')[0] || 'there'} 👋</h2>
           <p style={{ fontSize: 14, color: 'var(--gray-500)', marginTop: 2 }}>Here's your daily overview</p>
         </div>
       </div>
 
-      {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div className="stat-card" style={{ margin: 0 }}>
-            <div className="stat-icon">💰</div>
-            <h3>Today's Revenue</h3>
-            <div className="stat-value orange">{rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${stats.todayRevenue?.toFixed(2)}`}</div>
-          </div>
-          <div className="stat-card" style={{ margin: 0 }}>
-            <div className="stat-icon">📊</div>
-            <h3>Total Orders</h3>
-            <div className="stat-value" style={{ color: 'var(--gray-900)' }}>{stats.totalOrders}</div>
-          </div>
-          <div className="stat-card" style={{ margin: 0 }}>
-            <div className="stat-icon">⏳</div>
-            <h3>Pending</h3>
-            <div className="stat-value yellow">{stats.pendingOrders}</div>
-          </div>
-          <div className="stat-card" style={{ margin: 0 }}>
-            <div className="stat-icon">⭐</div>
-            <h3>Avg Rating</h3>
-            <div className="stat-value orange">
-              {avgRating > 0 ? `${avgRating.toFixed(1)} ★` : '—'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {CARD_STYLES.map(card => (
+          <div
+            key={card.key}
+            style={{
+              background: card.bg,
+              borderRadius: 16,
+              padding: '20px 24px',
+              color: '#fff',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+            }}
+          >
+            <div style={{
+              width: 52, height: 52, borderRadius: 14,
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, flexShrink: 0,
+            }}>
+              {card.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9, marginBottom: 4 }}>{card.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>
+                {getValue(card)}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
