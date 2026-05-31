@@ -13,15 +13,15 @@ const PLANS = [
 ];
 
 const METHODS = [
-  { id: 'bkash', label: 'bKash', color: '#E2136E', bg: '#FCE4EC' },
-  { id: 'nagad', label: 'Nagad', color: '#F58324', bg: '#FFF3E0' },
-  { id: 'rocket', label: 'Rocket', color: '#1565C0', bg: '#E3F2FD' },
+  { id: 'bkash', label: 'bKash', color: '#E2136E', bg: '#FCE4EC', img: '/bkash.png' },
+  { id: 'nagad', label: 'Nagad', color: '#F58324', bg: '#FFF3E0', img: '/nagad.jpg' },
+  { id: 'rocket', label: 'Rocket', color: '#1565C0', bg: '#E3F2FD', img: '/rocket.png' },
 ];
 
 const INSTRUCTIONS = {
-  bkash: { number: '01XXXXXXXXX', type: 'Send Money' },
-  nagad: { number: '01XXXXXXXXX', type: 'Send Money' },
-  rocket: { number: '01XXXXXXXXX', type: 'Send Money' },
+  bkash: { number: '01739849009', type: 'Send Money' },
+  nagad: { number: '01739849009', type: 'Send Money' },
+  rocket: { number: '01739849009', type: 'Send Money' },
 };
 
 export default function UpgradeToPro({ onBack }) {
@@ -117,7 +117,7 @@ export default function UpgradeToPro({ onBack }) {
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ fontSize: 13, color: 'var(--gray-500)' }}>
                 <Clock size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                Support Hours: 10:00 AM – 10:00 PM
+                Support Hours: 6:00 PM – 12:00 PM
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <button className="pro-cta" style={{ padding: '10px 20px', fontSize: 14 }} onClick={checkStatus}>
@@ -334,13 +334,10 @@ export default function UpgradeToPro({ onBack }) {
                     background: selected ? m.bg : 'var(--white)',
                   }}
                 >
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 12, background: m.bg,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12, fontWeight: 800, color: m.color, flexShrink: 0
-                  }}>
-                    {m.label[0]}
-                  </div>
+                  <img src={m.img} alt={m.label} style={{
+                    width: 40, height: 40, borderRadius: 8, objectFit: 'contain',
+                    flexShrink: 0, background: m.bg, padding: 4
+                  }} />
                   <div style={{ flex: 1, textAlign: 'left' }}>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{m.label}</div>
                     <div style={{ fontSize: 13, color: 'var(--gray-400)' }}>Send Money</div>
