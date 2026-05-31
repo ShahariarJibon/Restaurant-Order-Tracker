@@ -7,6 +7,7 @@ import {
   Sun, Moon, Lock, LogOut, Star, Settings, Crown, CheckCircle, ArrowLeft,
 } from '../components/Icons';
 import AdminAnalytics from './AdminAnalytics';
+import AdminOrders from './AdminOrders';
 
 const PRO_FEATURES = [
   { Icon: ScrollText, name: 'History', desc: 'Order history with filters & export' },
@@ -65,6 +66,20 @@ export default function AdminSettings({ onGoToUpgrade }) {
       updateCurrency(code);
     } catch {}
   };
+
+  if (view === 'history') {
+    return (
+      <div className="tab-content">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <button onClick={() => setView('settings')} style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontFamily: 'inherit' }}>
+            <ArrowLeft size={18} /> Back
+          </button>
+          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Order History</h2>
+        </div>
+        <AdminOrders />
+      </div>
+    );
+  }
 
   if (view === 'analytics') {
     return (
@@ -146,15 +161,15 @@ export default function AdminSettings({ onGoToUpgrade }) {
         </h3>
         {PRO_FEATURES.map((feat, i) => {
           const FeatIcon = feat.Icon;
-          const isAnalytics = feat.name === 'Advanced Analytics';
+          const isClickable = isPro && (feat.name === 'Advanced Analytics' || feat.name === 'History');
           return (
             <div
               key={i}
               className="pro-card"
-              onClick={isPro && isAnalytics ? () => setView('analytics') : undefined}
+              onClick={isClickable ? () => setView(feat.name === 'History' ? 'history' : 'analytics') : undefined}
               style={{
                 opacity: isPro ? 1 : 0.6, filter: isPro ? 'none' : 'grayscale(0.3)',
-                cursor: isPro && isAnalytics ? 'pointer' : 'default',
+                cursor: isClickable ? 'pointer' : 'default',
               }}
             >
               <div className="pro-card-icon">{isPro ? <CheckCircle size={20} style={{ color: 'var(--green)' }} /> : <Lock size={20} />}</div>
