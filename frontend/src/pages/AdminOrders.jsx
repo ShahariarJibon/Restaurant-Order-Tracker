@@ -118,9 +118,14 @@ export default function AdminOrders() {
                 <div className="order-card-total">{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</div>
                 <div className="order-card-actions">
                   {order.status === 'pending' && (
-                    <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>
-                      Accept
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>
+                        Accept
+                      </button>
+                      <button className="btn btn-sm btn-danger" onClick={() => deleteOrder(order.id)}>
+                        Decline
+                      </button>
+                    </div>
                   )}
                   {order.status === 'preparing' && (
                     <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={() => updateStatus(order.id, order.status)}>
