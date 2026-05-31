@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
+import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 
 const STEPS = [
   { key: 'pending', label: 'Order Placed' },
@@ -13,44 +13,64 @@ function OrderCard({ order, rates, currency, showDone, onDone }) {
   const currentIdx = STEPS.findIndex(s => s.key === order.status);
   const orderTime = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  const isCancelled = order.status === 'cancelled';
+
   return (
     <div style={{
-      background: 'var(--white)', borderRadius: 'var(--radius)', padding: 16,
-      boxShadow: 'var(--shadow-sm)', width: '100%', maxWidth: 320, marginBottom: 12
+      background: isCancelled ? '#FEF2F2' : 'var(--white)',
+      borderRadius: 'var(--radius)', padding: 16,
+      boxShadow: 'var(--shadow-sm)', width: '100%', maxWidth: 320, marginBottom: 12,
+      border: isCancelled ? '2px solid #EF4444' : 'none',
+      opacity: isCancelled ? 0.7 : 1
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontWeight: 700, fontSize: 15 }}>#{order.id.slice(0, 6).toUpperCase()}</span>
-        <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
-          {orderTime} • Table {order.table_number || '—'}
+        <span style={{
+          fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 12,
+          background: isCancelled ? '#FEE2E2' : order.status === 'done' ? 'var(--green-light)' : order.status === 'preparing' ? 'var(--orange-light)' : 'var(--yellow-light)',
+          color: isCancelled ? '#DC2626' : order.status === 'done' ? 'var(--green)' : order.status === 'preparing' ? 'var(--orange)' : 'var(--yellow)'
+        }}>
+          {isCancelled ? 'CANCELLED' : order.status.toUpperCase()}
         </span>
       </div>
-      <div className="status-steps" style={{ gap: 2 }}>
-        {STEPS.map((step, i) => {
-          const status = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
-          return (
-            <div key={step.key} className={`status-step ${status}`} style={{ gap: 10 }}>
-              <div className="step-dot" style={{ width: 26, height: 26, fontSize: 12 }}>
-                {i < currentIdx ? '✓' : i + 1}
-              </div>
-              <div>
-                <div className="step-label" style={{ fontSize: 13 }}>{step.label}</div>
-              </div>
-            </div>
-          );
-        })}
+      <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8 }}>
+        {orderTime} • Table {order.table_number || '—'} • {order.customer_name || 'Guest'}
       </div>
-      <div style={{ marginTop: 10 }}>
-        {order.items?.map(item => (
-          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: 13 }}>
-            <span>{item.item_name} × {item.quantity}</span>
-            <span style={{ fontWeight: 600 }}>{rates ? formatPrice(item.price * item.quantity, currency, rates) : `$${(item.price * item.quantity).toFixed(2)}`}</span>
+      {isCancelled ? (
+        <div style={{ textAlign: 'center', padding: '12px 0', color: '#DC2626', fontWeight: 700, fontSize: 15 }}>
+          ⛔ Order Cancelled
+        </div>
+      ) : (
+        <>
+          <div className="status-steps" style={{ gap: 2 }}>
+            {STEPS.map((step, i) => {
+              const status = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
+              return (
+                <div key={step.key} className={`status-step ${status}`} style={{ gap: 10 }}>
+                  <div className="step-dot" style={{ width: 26, height: 26, fontSize: 12 }}>
+                    {i < currentIdx ? '✓' : i + 1}
+                  </div>
+                  <div>
+                    <div className="step-label" style={{ fontSize: 13 }}>{step.label}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--gray-200)', marginTop: 8, paddingTop: 8, fontWeight: 700, fontSize: 15 }}>
-        <span>Total</span>
-        <span style={{ color: 'var(--orange)' }}>{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</span>
-      </div>
+          <div style={{ marginTop: 10 }}>
+            {order.items?.map(item => (
+              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: 13 }}>
+                <span>{item.item_name} × {item.quantity}</span>
+                <span style={{ fontWeight: 600 }}>{rates ? formatPrice(item.price * item.quantity, currency, rates) : `$${(item.price * item.quantity).toFixed(2)}`}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--gray-200)', marginTop: 8, paddingTop: 8, fontWeight: 700, fontSize: 15 }}>
+            <span>Total</span>
+            <span style={{ color: 'var(--orange)' }}>{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</span>
+          </div>
+        </>
+      )}
       {showDone && order.status === 'done' && (
         <button
           onClick={() => onDone(order.id)}
@@ -78,7 +98,6 @@ export default function OrderConfirmation() {
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
-  // Fetch current order
   useEffect(() => {
     if (!orderId) return;
     const load = async () => {
@@ -91,7 +110,6 @@ export default function OrderConfirmation() {
     load();
   }, [orderId]);
 
-  // Fetch all orders for this table
   useEffect(() => {
     if (!tableId) return;
     const load = async () => {
@@ -105,7 +123,6 @@ export default function OrderConfirmation() {
     return () => clearInterval(interval);
   }, [tableId]);
 
-  // Fetch available tables when restaurant is known
   useEffect(() => {
     if (!currentOrder?.restaurant_id) return;
     axios.get(`/api/tables/public/${currentOrder.restaurant_id}`)
@@ -113,9 +130,8 @@ export default function OrderConfirmation() {
       .catch(() => {});
   }, [currentOrder?.restaurant_id]);
 
-  // Clear lastOrderId when all orders are done
   useEffect(() => {
-    const allDone = tableOrders.length > 0 && tableOrders.every(o => o.status === 'done');
+    const allDone = tableOrders.length > 0 && tableOrders.every(o => o.status === 'done' || o.status === 'cancelled');
     if (allDone) {
       localStorage.removeItem('lastOrderId');
       localStorage.removeItem('lastTableId');
@@ -136,43 +152,58 @@ export default function OrderConfirmation() {
   };
 
   const sortedOrders = [...tableOrders].sort((a, b) => {
-    if (a.status === 'done' && b.status !== 'done') return -1;
-    if (a.status !== 'done' && b.status === 'done') return 1;
+    const order = { cancelled: 0, done: 1, preparing: 2, pending: 3 };
+    const pa = order[a.status] ?? 4;
+    const pb = order[b.status] ?? 4;
+    if (pa !== pb) return pa - pb;
     return new Date(a.created_at) - new Date(b.created_at);
   });
 
-  const activeCount = tableOrders.filter(o => o.status !== 'done').length;
+  const activeCount = tableOrders.filter(o => o.status !== 'done' && o.status !== 'cancelled').length;
+  const hasCancelled = tableOrders.some(o => o.status === 'cancelled');
 
-  // Single order view (no table tracking)
   if (!tableId && currentOrder) {
+    const isCancelled = currentOrder.status === 'cancelled';
     const currentIdx = STEPS.findIndex(s => s.key === currentOrder.status);
     const orderTime = new Date(currentOrder.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return (
       <div className="mobile-app" style={{ paddingBottom: 0 }}>
         <div className="status-screen">
-          <div className={`status-icon ${currentOrder.status === 'done' ? 'placed' : ''}`} style={{ background: currentOrder.status === 'done' ? 'var(--green-light)' : 'var(--orange-light)' }}>
-            {currentOrder.status === 'done' ? '✅' : currentOrder.status === 'preparing' ? '👨‍🍳' : '📋'}
+          <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 2, marginBottom: 8 }}>ORDER PLACED</h1>
+          <div className={`status-icon ${currentOrder.status === 'done' && !isCancelled ? 'placed' : ''}`} style={{ background: isCancelled ? '#FEE2E2' : currentOrder.status === 'done' ? 'var(--green-light)' : 'var(--orange-light)' }}>
+            {isCancelled ? '⛔' : currentOrder.status === 'done' ? '✅' : currentOrder.status === 'preparing' ? '👨‍🍳' : '📋'}
           </div>
-          <h1>{currentOrder.status === 'done' ? 'Enjoy Your Meal!' : currentOrder.status === 'preparing' ? 'Being Prepared' : 'Order Placed!'}</h1>
-          <p className="sub">
-            {currentOrder.status === 'done' ? 'Your order is ready. Bon appétit!' : currentOrder.status === 'preparing' ? 'The kitchen is working on your order' : 'Your order has been sent to the kitchen'}
-          </p>
+          {isCancelled ? (
+            <>
+              <h1 style={{ color: '#DC2626' }}>Order Cancelled</h1>
+              <p className="sub">This order has been cancelled by the restaurant.</p>
+            </>
+          ) : (
+            <>
+              <h1>{currentOrder.status === 'done' ? 'Enjoy Your Meal!' : currentOrder.status === 'preparing' ? 'Being Prepared' : 'Order Placed!'}</h1>
+              <p className="sub">
+                {currentOrder.status === 'done' ? 'Your order is ready. Bon appétit!' : currentOrder.status === 'preparing' ? 'The kitchen is working on your order' : 'Your order has been sent to the kitchen'}
+              </p>
+            </>
+          )}
           <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 4 }}>Order</p>
           <p style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 16 }}>#{currentOrder.id.slice(0, 8).toUpperCase()}</p>
-          <div className="status-steps">
-            {STEPS.map((step, i) => {
-              const status = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
-              return (
-                <div key={step.key} className={`status-step ${status}`}>
-                  <div className="step-dot">{i < currentIdx ? '✓' : i + 1}</div>
-                  <div>
-                    <div className="step-label">{step.label}</div>
-                    {status === 'active' && <div className="step-time">{orderTime}</div>}
+          {!isCancelled && (
+            <div className="status-steps">
+              {STEPS.map((step, i) => {
+                const status = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
+                return (
+                  <div key={step.key} className={`status-step ${status}`}>
+                    <div className="step-dot">{i < currentIdx ? '✓' : i + 1}</div>
+                    <div>
+                      <div className="step-label">{step.label}</div>
+                      {status === 'active' && <div className="step-time">{orderTime}</div>}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
           {currentOrder.items && (
             <div style={{ background: 'var(--white)', borderRadius: 'var(--radius)', padding: 16, width: '100%', maxWidth: 300, boxShadow: 'var(--shadow-sm)', marginTop: 8 }}>
               {currentOrder.items.map(item => (
@@ -193,7 +224,6 @@ export default function OrderConfirmation() {
     );
   }
 
-  // No orders yet
   if (!currentOrder && tableId) {
     return (
       <div className="mobile-app" style={{ paddingBottom: 0 }}>
@@ -209,6 +239,8 @@ export default function OrderConfirmation() {
   return (
     <div className="mobile-app" style={{ paddingBottom: 0 }}>
       <div className="status-screen" style={{ paddingTop: 24 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 2, marginBottom: 16 }}>ORDER PLACED</h1>
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 20 }}>
           <button
             onClick={() => setShowTablePicker(true)}
@@ -219,12 +251,22 @@ export default function OrderConfirmation() {
           </button>
         </div>
 
-        {activeCount === 0 && tableOrders.length > 0 && (
+        {activeCount === 0 && tableOrders.length > 0 && !hasCancelled && (
           <>
             <div className={`status-icon placed`} style={{ background: 'var(--green-light)' }}>✅</div>
             <h1>Enjoy Your Meal!</h1>
             <p className="sub">All orders are ready. Bon appétit!</p>
           </>
+        )}
+
+        {hasCancelled && (
+          <div style={{
+            background: '#FEF2F2', border: '2px solid #EF4444', borderRadius: 'var(--radius)',
+            padding: '12px 16px', marginBottom: 16, width: '100%', maxWidth: 320,
+            display: 'flex', alignItems: 'center', gap: 10, color: '#DC2626', fontWeight: 700
+          }}>
+            ⛔ Some orders were cancelled by the restaurant
+          </div>
         )}
 
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -247,7 +289,6 @@ export default function OrderConfirmation() {
         )}
       </div>
 
-      {/* Table picker modal */}
       {showTablePicker && (
         <div className="modal-overlay" onClick={() => setShowTablePicker(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 320 }}>

@@ -122,7 +122,7 @@ export default function AdminOrders() {
                       <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>
                         Accept
                       </button>
-                      <button className="btn btn-sm btn-danger" onClick={() => deleteOrder(order.id)}>
+                      <button className="btn btn-sm btn-danger" onClick={async () => { await axios.put(`/api/orders/${order.id}/status`, { status: 'cancelled' }); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o)); }}>
                         Decline
                       </button>
                     </div>

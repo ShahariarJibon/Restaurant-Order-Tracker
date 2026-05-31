@@ -65,7 +65,7 @@ router.get('/public/table/:tableId', async (req, res) => {
   const orders = await queryAll(
     `SELECT o.*, t.table_number FROM orders o
      LEFT JOIN tables_tbl t ON o.table_id = t.id
-     WHERE o.table_id = ? AND o.status != 'done' ORDER BY o.created_at ASC`,
+     WHERE o.table_id = ? ORDER BY o.created_at ASC`,
     [req.params.tableId]
   );
   for (const order of orders) {
@@ -76,7 +76,7 @@ router.get('/public/table/:tableId', async (req, res) => {
 
 router.put('/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
-  if (!['pending', 'preparing', 'done'].includes(status)) {
+  if (!['pending', 'preparing', 'done', 'cancelled'].includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }
   await execute('UPDATE orders SET status = ? WHERE id = ? AND restaurant_id = ?', [status, req.params.id, req.restaurant.id]);
