@@ -5,6 +5,11 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
+function toNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
 router.post('/', async (req, res) => {
   const { restaurant_id, table_id, customer_name, items } = req.body;
   if (!restaurant_id || !items || items.length === 0) {
@@ -100,23 +105,23 @@ router.delete('/done/all', authMiddleware, async (req, res) => {
 
 router.get('/stats/dashboard', authMiddleware, async (req, res) => {
   const today = new Date().toISOString().split('T')[0];
-  const totalOrders = await queryOne('SELECT COUNT(*)::int as count FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
+  const totalOrders = await queryOne('SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
   const todayStats = await queryOne(
-    "SELECT COUNT(*)::int as count, COALESCE(SUM(total),0)::float as revenue FROM orders WHERE restaurant_id = ? AND DATE(created_at) = ?",
+    "SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue FROM orders WHERE restaurant_id = ? AND DATE(created_at) = ?",
     [req.restaurant.id, today]
   );
-  const pendingOrders = await queryOne("SELECT COUNT(*)::int as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
-  const totalRevenue = await queryOne('SELECT COALESCE(SUM(total),0)::float as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
+  const pendingOrders = await queryOne("SELECT COUNT(*) as count FROM orders WHERE restaurant_id = ? AND status = 'pending'", [req.restaurant.id]);
+  const totalRevenue = await queryOne('SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE restaurant_id = ?', [req.restaurant.id]);
   const avgRating = await queryOne('SELECT AVG(rating) as average FROM ratings WHERE restaurant_id = ?', [req.restaurant.id]);
-  const doneRevenue = await queryOne("SELECT COALESCE(SUM(total),0)::float as total FROM orders WHERE restaurant_id = ? AND status = 'done'", [req.restaurant.id]);
+  const doneRevenue = await queryOne("SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE restaurant_id = ? AND status = 'done'", [req.restaurant.id]);
   res.json({
-    totalOrders: totalOrders?.count || 0,
-    todayOrders: todayStats?.count || 0,
-    todayRevenue: todayStats?.revenue || 0,
-    pendingOrders: pendingOrders?.count || 0,
-    totalRevenue: totalRevenue?.total || 0,
-    doneRevenue: doneRevenue?.total || 0,
-    averageRating: avgRating?.average || 0
+    totalOrders: toNumber(totalOrders?.count),
+    todayOrders: toNumber(todayStats?.count),
+    todayRevenue: toNumber(todayStats?.revenue),
+    pendingOrders: toNumber(pendingOrders?.count),
+    totalRevenue: toNumber(totalRevenue?.total),
+    doneRevenue: toNumber(doneRevenue?.total),
+    averageRating: toNumber(avgRating?.average)
   });
 });
 
