@@ -1,2 +1,0 @@
-Using SQLite
-Server running on http://localhost:3001
