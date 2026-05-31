@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
-import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle } from '../components/Icons';
+import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle, Sparkles } from '../components/Icons';
+import CustomerDesktopLayout from '../components/CustomerDesktopLayout';
 
 function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
   const updateQty = (id, delta) => {
@@ -57,6 +58,36 @@ function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder,
   );
 }
 
+function DesktopPlaceOrderModal({ cart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency }) {
+  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+        <h2>Confirm Order</h2>
+        {cart.map(item => (
+          <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--gray-100)', fontSize: 14 }}>
+            <span>{item.name} × {item.quantity}</span>
+            <span style={{ fontWeight: 600 }}>{rates ? formatPrice(item.price * item.quantity, currency, rates) : `$${(item.price * item.quantity).toFixed(2)}`}</span>
+          </div>
+        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', fontWeight: 700, fontSize: 18 }}>
+          <span>Total</span>
+          <span style={{ color: 'var(--orange)' }}>{rates ? formatPrice(total, currency, rates) : `$${total.toFixed(2)}`}</span>
+        </div>
+        <div className="cart-name-input" style={{ marginTop: 8 }}>
+          <input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Your name (optional)" />
+        </div>
+        <div className="modal-actions" style={{ marginTop: 16 }}>
+          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={onPlaceOrder} disabled={placing} style={{ flex: 1 }}>
+            {placing ? 'Placing...' : 'Place Order'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerMenu() {
   const { restaurantId } = useParams();
   const [searchParams] = useSearchParams();
@@ -67,12 +98,20 @@ export default function CustomerMenu() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
+  const [showDesktopOrder, setShowDesktopOrder] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
   const [offline, setOffline] = useState(!navigator.onLine);
   const [rates, setRates] = useState(null);
   const [currency, setCurrency] = useState(getSelectedCurrency());
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 900);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 900);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -99,6 +138,22 @@ export default function CustomerMenu() {
         .catch(() => setError('Restaurant not found'));
     }
   }, [restaurantId]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      const { id, delta } = e.detail;
+      updateCartQty(id, delta);
+    };
+    window.addEventListener('cart-update-qty', handler);
+    return () => window.removeEventListener('cart-update-qty', handler);
+  }, []);
+
+  const updateCartQty = useCallback((id, delta) => {
+    setCart(prev => {
+      const next = prev.map(c => c.id === id ? { ...c, quantity: Math.max(0, c.quantity + delta) } : c);
+      return next.filter(c => c.quantity > 0);
+    });
+  }, []);
 
   const addToCart = (item) => {
     setCart(prev => {
@@ -128,6 +183,9 @@ export default function CustomerMenu() {
       localStorage.setItem('lastOrderId', res.data.orderId);
       localStorage.setItem('lastTableId', tableId || '');
       localStorage.setItem('lastRestaurantId', restaurantId);
+      setCart([]);
+      setShowCart(false);
+      setShowDesktopOrder(false);
       navigate(`/order-confirmation/${res.data.orderId}?table=${tableId || ''}`);
     } catch {
       setError('Failed to place order. Try again.');
@@ -156,6 +214,73 @@ export default function CustomerMenu() {
   const filteredItems = activeCategory === 'all'
     ? data.items
     : data.items.filter(item => item.category_id === activeCategory);
+
+  const renderMenuItems = () => (
+    <>
+      {filteredItems.map(item => (
+        <div key={item.id} className={`cd-food-card ${isDesktop ? '' : 'food-card'}`} onClick={() => addToCart(item)}>
+          <div className="cd-food-card-img">
+            {item.image ? <img src={item.image} alt={item.name} /> : <UtensilsCrossed size={24} />}
+          </div>
+          <div className="cd-food-card-body">
+            <div className="cd-food-card-name">{item.name}</div>
+            {item.description && <div className="cd-food-card-desc">{item.description}</div>}
+            <div className="cd-food-card-bottom">
+              <span className="cd-food-card-price">{rates ? formatPrice(parseFloat(item.price), currency, rates) : `$${parseFloat(item.price).toFixed(2)}`}</span>
+              <button className="cd-food-card-add" onClick={e => { e.stopPropagation(); addToCart(item); }}>
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+      {filteredItems.length === 0 && (
+        <div className="empty-state">
+          <div className="empty-icon"><UtensilsCrossed size={40} /></div>
+          <h3>No items yet</h3>
+          <p>Check back soon for new menu items</p>
+        </div>
+      )}
+    </>
+  );
+
+  if (isDesktop) {
+    return (
+      <>
+        {offline && (
+          <div className="offline-banner" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 999 }}>
+            <WifiOff size={16} /> Offline mode — will sync automatically
+          </div>
+        )}
+        <CustomerDesktopLayout
+          restaurant={data.restaurant}
+          tableId={tableId}
+          categories={data.categories || []}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+          cart={cart}
+          cartCount={cartCount}
+          onCartToggle={() => setShowDesktopOrder(true)}
+        >
+          <div className="cd-food-grid">
+            {renderMenuItems()}
+          </div>
+        </CustomerDesktopLayout>
+        {showDesktopOrder && (
+          <DesktopPlaceOrderModal
+            cart={cart}
+            customerName={customerName}
+            setCustomerName={setCustomerName}
+            onPlaceOrder={handlePlaceOrder}
+            placing={placing}
+            onClose={() => setShowDesktopOrder(false)}
+            rates={rates}
+            currency={currency}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="mobile-app">
@@ -238,7 +363,6 @@ export default function CustomerMenu() {
           <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
       )}
-
 
       {showCart && (
         <CartPanel

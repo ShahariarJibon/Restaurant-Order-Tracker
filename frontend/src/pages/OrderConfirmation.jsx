@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
-import { XCircle, CheckCircle, ChefHat, ClipboardList, RefreshCw, UtensilsCrossed } from '../components/Icons';
+import { XCircle, CheckCircle, ChefHat, ClipboardList, RefreshCw, UtensilsCrossed, Sparkles, Clock } from '../components/Icons';
 
 const RATING_CACHE_KEY = (tableId) => `rated_table_${tableId}`;
 
@@ -90,6 +90,7 @@ function OrderCard({ order, rates, currency, showDone, onDone }) {
 export default function OrderConfirmation() {
   const { orderId } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const tableId = searchParams.get('table');
 
   const [currentOrder, setCurrentOrder] = useState(null);
@@ -103,6 +104,13 @@ export default function OrderConfirmation() {
   const [selectedStar, setSelectedStar] = useState(0);
   const [submittingRating, setSubmittingRating] = useState(false);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 900);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 900);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => { fetchRates().then(setRates); }, []);
 
@@ -315,6 +323,173 @@ export default function OrderConfirmation() {
 
   const displayedOrders = sortedOrders.length > 0 ? sortedOrders : (currentOrder ? [currentOrder] : []);
 
+  const renderRatingModal = () => (
+    <div className="modal-overlay" onClick={handleDismissRating}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{
+        maxWidth: 400, textAlign: 'center', padding: '40px 32px'
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }}>
+          <Sparkles size={48} style={{ color: 'var(--yellow)' }} />
+        </div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Rate Your Experience</h2>
+        <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 24 }}>
+          How was your meal today?
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 24 }}>
+          {[1, 2, 3, 4, 5].map(star => (
+            <button
+              key={star}
+              onClick={() => { if (!submittingRating) { setSelectedStar(star); handleSubmitRating(star); } }}
+              onMouseEnter={() => setHoveredStar(star)}
+              onMouseLeave={() => setHoveredStar(0)}
+              style={{
+                background: 'none', border: 'none', fontSize: 42, cursor: submittingRating ? 'default' : 'pointer',
+                color: (hoveredStar || selectedStar) >= star ? '#FFC107' : 'var(--gray-300)',
+                transition: 'color 0.15s, transform 0.15s',
+                transform: hoveredStar >= star ? 'scale(1.2)' : 'scale(1)',
+                padding: '0 2px', lineHeight: 1
+              }}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        {submittingRating && <p style={{ fontSize: 13, color: 'var(--gray-400)' }}>Submitting...</p>}
+        <p style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap a star to rate, or tap outside to dismiss</p>
+      </div>
+    </div>
+  );
+
+  const renderTablePicker = () => (
+    <div className="modal-overlay" onClick={() => setShowTablePicker(false)}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 320 }}>
+        <h2>Change Table</h2>
+        <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 16 }}>Select your new table number</p>
+        <select
+          value={currentOrder?.table_id || ''}
+          onChange={e => handleChangeTable(e.target.value)}
+          style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)', fontWeight: 600, fontSize: 15, fontFamily: 'inherit' }}
+        >
+          {tables.map(t => (
+            <option key={t.id} value={t.id}>Table {t.table_number}</option>
+          ))}
+        </select>
+        <div className="modal-actions">
+          <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowTablePicker(false)}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const StatusHero = ({ order, isCancelled }) => (
+    <div className="cd-confirm-hero">
+      <div className={`cd-confirm-icon ${order.status === 'done' && !isCancelled ? 'done' : order.status === 'preparing' ? 'preparing' : 'pending'}`}>
+        {isCancelled ? <XCircle size={40} /> : order.status === 'done' ? <CheckCircle size={40} /> : order.status === 'preparing' ? <ChefHat size={40} /> : <ClipboardList size={40} />}
+      </div>
+      <h1 className="cd-confirm-title">
+        {isCancelled ? 'Order Cancelled' : order.status === 'done' ? 'Enjoy Your Meal!' : order.status === 'preparing' ? 'Being Prepared' : 'Order Placed!'}
+      </h1>
+      <p className="cd-confirm-sub">
+        {isCancelled ? 'This order has been cancelled by the restaurant.' : order.status === 'done' ? 'Your order is ready. Bon appétit!' : order.status === 'preparing' ? 'The kitchen is working on your order' : 'Your order has been sent to the kitchen'}
+      </p>
+      <div className="cd-confirm-id">#{order.id.slice(0, 8).toUpperCase()}</div>
+    </div>
+  );
+
+  const HorizontalSteps = ({ order, isCancelled }) => {
+    if (isCancelled) return null;
+    const currentIdx = STEPS.findIndex(s => s.key === order.status);
+    return (
+      <div className="cd-confirm-steps">
+        {STEPS.map((step, i) => {
+          const state = i < currentIdx ? 'completed' : i === currentIdx ? 'active' : '';
+          return (
+            <div key={step.key} className={`cd-step ${state}`}>
+              <div className="cd-step-dot">{i < currentIdx ? '✓' : i + 1}</div>
+              <div className="cd-step-label">{step.label}</div>
+              {i < STEPS.length - 1 && <div className={`cd-step-line ${i < currentIdx ? 'filled' : ''}`} />}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // ---- DESKTOP RENDER ----
+  if (isDesktop && !(!tableId && currentOrder)) {
+    const isSingleCancelled = currentOrder?.status === 'cancelled';
+    return (
+      <div className="customer-desktop" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div className="cd-confirm-wrapper">
+          {currentOrder && (
+            <>
+              <StatusHero order={currentOrder} isCancelled={isSingleCancelled} />
+              <HorizontalSteps order={currentOrder} isCancelled={isSingleCancelled} />
+            </>
+          )}
+
+          {tableOrders.length > 0 && (
+            <div className="cd-confirm-order-grid">
+              {displayedOrders.map(order => {
+                const canc = order.status === 'cancelled';
+                const idx = STEPS.findIndex(s => s.key === order.status);
+                const time = new Date(order.created_at + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div key={order.id} className={`cd-confirm-order-card ${canc ? 'cancelled' : ''}`}>
+                    <div className="cd-confirm-order-header">
+                      <span className="cd-confirm-order-id">#{order.id.slice(0, 6).toUpperCase()}</span>
+                      <span className={`badge badge-${order.status}`}>{order.status.toUpperCase()}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--gray-500)', marginBottom: 8, marginTop: 4 }}>
+                      {time} • Table {order.table_number || '—'} • {order.customer_name || 'Guest'}
+                    </div>
+                    {order.items?.map(item => (
+                      <div key={item.id} className="cd-confirm-order-item">
+                        <span>{item.item_name} × {item.quantity}</span>
+                        <span>{rates ? formatPrice(item.price * item.quantity, currency, rates) : `$${(item.price * item.quantity).toFixed(2)}`}</span>
+                      </div>
+                    ))}
+                    <div className="cd-confirm-order-total">
+                      <span>Total</span>
+                      <span>{rates ? formatPrice(parseFloat(order.total), currency, rates) : `$${parseFloat(order.total).toFixed(2)}`}</span>
+                    </div>
+                    {!canc && (
+                      <div className="cd-confirm-mini-steps">
+                        {STEPS.map((step, i) => (
+                          <div key={step.key} className={`cd-mini-step ${i <= idx ? 'active' : ''}`} />
+                        ))}
+                      </div>
+                    )}
+                    {canc && (
+                      <div style={{ color: '#DC2626', fontWeight: 600, fontSize: 13, marginTop: 8 }}>
+                        <XCircle size={14} /> Cancelled
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
+            {tableId && (
+              <button onClick={() => setShowTablePicker(true)} className="btn btn-outline btn-sm">
+                <RefreshCw size={16} /> Change Table
+              </button>
+            )}
+            <button onClick={() => navigate(`/menu/${currentOrder?.restaurant_id}?table=${tableId || ''}`)} className="btn btn-outline btn-sm">
+              <UtensilsCrossed size={16} /> Order More
+            </button>
+          </div>
+        </div>
+
+        {showRating && renderRatingModal()}
+        {showTablePicker && renderTablePicker()}
+      </div>
+    );
+  }
+
+  // ---- MOBILE RENDER ----
   return (
     <div className="mobile-app" style={{ paddingBottom: 0 }}>
       <div className="status-screen" style={{ paddingTop: 24 }}>
@@ -368,58 +543,8 @@ Thank you for your order!
         )}
       </div>
 
-      {showRating && (
-        <div className="modal-overlay" onClick={handleDismissRating}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{
-            maxWidth: 320, textAlign: 'center', padding: '32px 24px'
-          }}>
-            <h2 style={{ fontSize: 20, marginBottom: 4 }}>Rate Your Experience</h2>
-            <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 20 }}>
-              How was your meal today?
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-              {[1, 2, 3, 4, 5].map(star => (
-                <button
-                  key={star}
-                  onClick={() => { if (!submittingRating) { setSelectedStar(star); handleSubmitRating(star); } }}
-                  onMouseEnter={() => setHoveredStar(star)}
-                  onMouseLeave={() => setHoveredStar(0)}
-                  style={{
-                    background: 'none', border: 'none', fontSize: 36, cursor: submittingRating ? 'default' : 'pointer',
-                    color: (hoveredStar || selectedStar) >= star ? '#FFC107' : 'var(--gray-300)',
-                    transition: 'color 0.15s', padding: '0 2px'
-                  }}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-            {submittingRating && <p style={{ fontSize: 13, color: 'var(--gray-400)' }}>Submitting...</p>}
-            <p style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap a star to rate, or tap outside to dismiss</p>
-          </div>
-        </div>
-      )}
-
-      {showTablePicker && (
-        <div className="modal-overlay" onClick={() => setShowTablePicker(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 320 }}>
-            <h2>Change Table</h2>
-            <p style={{ fontSize: 14, color: 'var(--gray-500)', marginBottom: 16 }}>Select your new table number</p>
-            <select
-              value={currentOrder?.table_id || ''}
-              onChange={e => handleChangeTable(e.target.value)}
-              style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: '2px solid var(--gray-200)', background: 'var(--white)', color: 'var(--gray-900)', fontWeight: 600, fontSize: 15, fontFamily: 'inherit' }}
-            >
-              {tables.map(t => (
-                <option key={t.id} value={t.id}>Table {t.table_number}</option>
-              ))}
-            </select>
-            <div className="modal-actions">
-              <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowTablePicker(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showRating && renderRatingModal()}
+      {showTablePicker && renderTablePicker()}
     </div>
   );
 }
