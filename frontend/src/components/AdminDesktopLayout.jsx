@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency';
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
-  DollarSign, Hourglass, LogOut, Star,
+  Hourglass, LogOut,
 } from './Icons';
 
 const NAV = [
@@ -130,7 +130,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
             {stats && (
               <div className="topbar-stats">
                 <span className="topbar-stat" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <DollarSign size={14} /> {rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${Number(stats.todayRevenue).toFixed(2)}`}
+                  {rates ? formatPrice(stats.todayRevenue, currency, rates) : `$${Number(stats.todayRevenue).toFixed(2)}`}
                 </span>
                 <span className="topbar-stat" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                   <ClipboardList size={14} /> {stats.totalOrders}
