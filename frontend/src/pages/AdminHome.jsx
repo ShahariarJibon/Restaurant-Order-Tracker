@@ -20,7 +20,10 @@ export default function AdminHome({ onGoToSettings }) {
   useEffect(() => { fetchRates().then(setRates); }, []);
 
   useEffect(() => {
-    axios.get('/api/orders/stats/dashboard').then(r => setStats(r.data));
+    const fetchStats = () => axios.get('/api/orders/stats/dashboard').then(r => setStats(r.data));
+    fetchStats();
+    const interval = setInterval(fetchStats, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const getValue = (card) => {
