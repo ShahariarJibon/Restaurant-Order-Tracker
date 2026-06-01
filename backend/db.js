@@ -110,6 +110,9 @@ export async function initDB() {
     try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_bkash TEXT DEFAULT ''"); } catch {}
     try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_nagad TEXT DEFAULT ''"); } catch {}
     try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_qr_rocket TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_phone_bkash TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_phone_nagad TEXT DEFAULT ''"); } catch {}
+    try { await pgPool.query("ALTER TABLE restaurants ADD COLUMN IF NOT EXISTS payment_phone_rocket TEXT DEFAULT ''"); } catch {}
     try {
       await pgPool.query(`
         CREATE TABLE IF NOT EXISTS ratings (
@@ -160,6 +163,9 @@ export async function initDB() {
     try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_bkash TEXT DEFAULT ''"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_nagad TEXT DEFAULT ''"); } catch {}
     try { db.run("ALTER TABLE restaurants ADD COLUMN payment_qr_rocket TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_phone_bkash TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_phone_nagad TEXT DEFAULT ''"); } catch {}
+    try { db.run("ALTER TABLE restaurants ADD COLUMN payment_phone_rocket TEXT DEFAULT ''"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS ratings (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, rating INTEGER NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, method TEXT NOT NULL, trx_id TEXT NOT NULL, sender_number TEXT DEFAULT '', amount REAL NOT NULL, plan_type TEXT NOT NULL, status TEXT DEFAULT 'pending', screenshot TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     try { db.run("ALTER TABLE payments ADD COLUMN screenshot TEXT DEFAULT ''"); } catch {}

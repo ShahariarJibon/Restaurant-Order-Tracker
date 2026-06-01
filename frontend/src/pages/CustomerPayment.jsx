@@ -52,6 +52,16 @@ export default function CustomerPayment() {
     }
   };
 
+  const getPhone = () => {
+    if (!restaurant) return '';
+    switch (method) {
+      case 'bKash': return restaurant.payment_phone_bkash || '';
+      case 'Nagad': return restaurant.payment_phone_nagad || '';
+      case 'Rocket': return restaurant.payment_phone_rocket || '';
+      default: return '';
+    }
+  };
+
   const handleScreenshot = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -127,13 +137,23 @@ export default function CustomerPayment() {
           </div>
         </div>
 
-        {/* QR Code */}
-        {getQr() && (
-          <div className="card" style={{ marginBottom: 16, textAlign: 'center', padding: 20 }}>
-            <img src={getQr()} alt={`${method} QR`} style={{ width: 200, height: 200, objectFit: 'contain', margin: '0 auto 8px' }} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)' }}>Scan to pay via {method}</p>
-          </div>
-        )}
+        {/* Payment Info */}
+        <div className="card" style={{ marginBottom: 16, textAlign: 'center', padding: 20 }}>
+          {getQr() ? (
+            <>
+              <img src={getQr()} alt={`${method} QR`} style={{ width: 200, height: 200, objectFit: 'contain', margin: '0 auto 8px' }} />
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--gray-600)' }}>Scan to pay via {method}</p>
+            </>
+          ) : (
+            <p style={{ fontSize: 13, color: 'var(--gray-500)' }}>Pay via {method}</p>
+          )}
+          {getPhone() && (
+            <div style={{ marginTop: getQr() ? 12 : 0, padding: '10px 14px', background: 'var(--gray-50)', borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <Phone size={16} color="var(--orange)" />
+              <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: 1 }}>{getPhone()}</span>
+            </div>
+          )}
+        </div>
 
         {/* Payment Method */}
         <div style={{ marginBottom: 16 }}>
