@@ -268,7 +268,7 @@ export default function OrderConfirmation() {
     );
   };
 
-  if (!tableId && currentOrder) {
+  if (currentOrder) {
     const isCancelled = currentOrder.status === 'cancelled';
     const isPaymentRejected = currentOrder.payment_status === 'rejected' || currentOrder.status === 'payment_failed';
     const currentIdx = STEPS.findIndex(s => s.key === currentOrder.status);
@@ -326,6 +326,16 @@ export default function OrderConfirmation() {
               </div>
             </div>
           )}
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 20 }}>
+            {tableId && (
+              <button onClick={() => setShowTablePicker(true)} className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <RefreshCw size={16} /> Change Table
+              </button>
+            )}
+            <button onClick={() => navigate(`/menu/${currentOrder?.restaurant_id}?table=${tableId || ''}`)} className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <UtensilsCrossed size={16} /> Order More
+            </button>
+          </div>
           <p style={{ marginTop: 24, fontSize: 13, color: 'var(--gray-400)' }}>Thank you for your order!</p>
         </div>
 
