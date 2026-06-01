@@ -147,7 +147,7 @@ export default function UpgradeToPro({ onBack }) {
                 <Clock size={14} /> Support Hours: 10:00 AM – 10:00 PM
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-                <a href="tel:01739849009" style={{ padding: '12px 20px', borderRadius: 10, border: '1px solid var(--gray-200)', background: 'var(--white)', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', fontFamily: 'inherit' }}>
+                <a href="https://portfolio-v2-smoky-phi.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ padding: '12px 20px', borderRadius: 10, border: '1px solid var(--gray-200)', background: 'var(--white)', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', fontFamily: 'inherit' }}>
                   <MessageSquare size={16} /> Contact Support
                 </a>
                 <button className="pro-cta" style={{ padding: '12px 20px', fontSize: 14 }} onClick={checkStatus}>
