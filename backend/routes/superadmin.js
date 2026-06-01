@@ -37,15 +37,15 @@ router.get('/stats', superAuth, async (req, res) => {
   const restaurants = await queryAll('SELECT * FROM restaurants ORDER BY created_at DESC');
   const totalRestaurants = restaurants.length;
   const proUsers = restaurants.filter(r => r.plan === 'pro').length;
-  const totalOrders = await queryOne('SELECT COUNT(*) as count FROM orders');
-  const totalRevenue = await queryOne("SELECT COALESCE(SUM(total),0) as rev FROM orders WHERE status != 'cancelled'");
-  const pendingOrders = await queryOne("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'");
+  const totalRevenue = await queryOne("SELECT COALESCE(SUM(amount),0) as rev FROM payments WHERE status = 'approved'");
+  const totalOrders = await queryOne("SELECT COUNT(*) as count FROM payments");
+  const pendingApprovals = await queryOne("SELECT COUNT(*) as count FROM payments WHERE status = 'pending'");
   res.json({
     totalRestaurants,
     proUsers,
     totalOrders: totalOrders?.count || 0,
     totalRevenue: totalRevenue?.rev || 0,
-    pendingOrders: pendingOrders?.count || 0,
+    pendingApprovals: pendingApprovals?.count || 0,
     freeUsers: totalRestaurants - proUsers,
     restaurants
   });

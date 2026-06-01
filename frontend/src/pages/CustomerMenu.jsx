@@ -324,8 +324,23 @@ export default function CustomerMenu() {
           cartCount={cartCount}
           onCartToggle={() => setShowDesktopOrder(true)}
         >
-          <div className="cd-food-grid">
-            {renderMenuItems()}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
+              style={{
+                position: 'absolute', top: -52, right: 0, zIndex: 10,
+                background: 'var(--gray-100)', border: '1px solid var(--gray-200)',
+                color: 'var(--gray-600)', cursor: 'pointer', borderRadius: 8,
+                padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+              }}
+              title="Send Feedback"
+            >
+              <MessageSquare size={16} /> Feedback
+            </button>
+            <div className="cd-food-grid">
+              {renderMenuItems()}
+            </div>
           </div>
         </CustomerDesktopLayout>
         {showDesktopOrder && (
@@ -365,6 +380,18 @@ export default function CustomerMenu() {
             <p>Table {tableId ? `#${tableId.slice(0, 4)}` : '—'}</p>
           </div>
         </div>
+        <button
+          onClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
+          style={{
+            background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer',
+            padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4,
+            fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+          }}
+          title="Send Feedback"
+        >
+          <MessageSquare size={18} />
+          Feedback
+        </button>
       </div>
 
       <div className="category-chips">
@@ -428,19 +455,6 @@ export default function CustomerMenu() {
           <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
       )}
-
-      <button
-        onClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
-        style={{
-          position: 'fixed', bottom: cartCount > 0 ? 80 : 90, right: 20, zIndex: 999,
-          background: 'var(--orange)', color: 'white', border: 'none', borderRadius: '50%',
-          width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-        }}
-        title="Send Feedback"
-      >
-        <MessageSquare size={22} />
-      </button>
 
       {showFeedback && (
         <div className="modal-overlay" onClick={() => setShowFeedback(false)}>
