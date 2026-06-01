@@ -20,7 +20,7 @@ const INSTRUCTIONS = {
 };
 
 export default function UpgradeToPro({ onBack }) {
-  const { restaurant, updateRestaurant } = useAuth();
+  const { restaurant } = useAuth();
   const [method, setMethod] = useState('');
   const [trxId, setTrxId] = useState('');
   const [senderNumber, setSenderNumber] = useState('');
