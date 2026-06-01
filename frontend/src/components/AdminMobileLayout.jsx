@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot } from './Icons';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings, ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot, MessageSquare } from './Icons';
 
 const TABS = [
   { key: 'home', label: 'Home', Icon: LayoutDashboard },
@@ -65,8 +65,8 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
                 Payments
               </button>
               <button className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
-                <span className="nav-icon"><Bell size={20} /></span>
-                Alerts
+                <span className="nav-icon"><MessageSquare size={20} /></span>
+                Feedback
               </button>
               <button className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
                 <span className="nav-icon"><Users size={20} /></span>

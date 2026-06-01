@@ -23,16 +23,17 @@ import SuperAdminSettings from './pages/SuperAdminSettings';
 import UpgradeToPro from './pages/UpgradeToPro';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminPayments from './pages/AdminPayments';
+import AdminFeedback from './pages/AdminFeedback';
 import ProFeaturePlaceholder from './pages/ProFeaturePlaceholder';
 import {
-  ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
+  ScrollText, BarChart3, CreditCard, MessageSquare, Users, Package, Gift, FileText, Bot,
 } from './components/Icons';
 
 const PRO_TAB_ICONS = {
   history: ScrollText,
   analytics: BarChart3,
   payments: CreditCard,
-  notifications: Bell,
+  notifications: MessageSquare,
   staff: Users,
   inventory: Package,
   loyalty: Gift,
@@ -44,7 +45,7 @@ const PRO_TAB_INFO = {
   history: { name: 'History', desc: 'Order history with filters & export' },
   analytics: { name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
   payments: { name: 'Payments', desc: 'bKash, Nagad, card payments' },
-  notifications: { name: 'Notifications', desc: 'Sound alerts, push, SMS' },
+  notifications: { name: 'Feedback', desc: 'Customer reviews & comments' },
   staff: { name: 'Staff Management', desc: 'Multiple accounts with roles' },
   inventory: { name: 'Inventory', desc: 'Track ingredients & stock' },
   loyalty: { name: 'Loyalty Program', desc: 'Points, coupons, promos' },
@@ -109,6 +110,7 @@ function ProtectedAdmin() {
       case 'history': return <AdminOrders />;
       case 'analytics': return <AdminAnalytics />;
       case 'payments': return <AdminPayments />;
+      case 'notifications': return isPro ? <AdminFeedback /> : <AdminHome />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: {

@@ -5,7 +5,7 @@ import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency'
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
   Hourglass, LogOut, ScrollText, TrendingUp, BarChart3,
-  CreditCard, Bell, Users, Package, Gift, FileText, Bot,
+  CreditCard, Bell, Users, Package, Gift, FileText, Bot, MessageSquare,
 } from './Icons';
 
 const NAV = [
@@ -24,7 +24,7 @@ const PANEL_DEFS = {
   history: { Icon: ScrollText, title: 'Order History', lines: ['View past orders', 'Export to Excel'] },
   analytics: { Icon: BarChart3, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
   payments: { Icon: CreditCard, title: 'Payments', lines: ['bKash, Nagad, card payments', 'Coming soon'] },
-  notifications: { Icon: Bell, title: 'Notifications', lines: ['Sound alerts, push, SMS', 'Coming soon'] },
+  notifications: { Icon: MessageSquare, title: 'Feedback', lines: ['Customer reviews & comments', 'Read customer feedback'] },
   staff: { Icon: Users, title: 'Staff Management', lines: ['Multiple accounts with roles', 'Coming soon'] },
   inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
   loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
@@ -140,8 +140,8 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
                 <span className="sidebar-nav-label">Payments</span>
               </button>
               <button className={`sidebar-nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
-                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Bell size={18} /></span>
-                <span className="sidebar-nav-label">Notifications</span>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><MessageSquare size={18} /></span>
+                <span className="sidebar-nav-label">Feedback</span>
               </button>
               <button className={`sidebar-nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Users size={18} /></span>

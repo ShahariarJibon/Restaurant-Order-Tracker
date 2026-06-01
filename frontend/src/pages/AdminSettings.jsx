@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { CURRENCIES, getSelectedCurrency } from '../utils/currency';
 import {
-  ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
+  ScrollText, BarChart3, CreditCard, MessageSquare, Users, Package, Gift, FileText, Bot,
   Sun, Moon, Lock, LogOut, Star, Crown, CheckCircle,
 } from '../components/Icons';
 
@@ -11,7 +11,7 @@ const PRO_FEATURES = [
   { Icon: ScrollText, tabKey: 'history', name: 'History', desc: 'Order history with filters & export' },
   { Icon: BarChart3, tabKey: 'analytics', name: 'Advanced Analytics', desc: 'Daily reports, best sellers, revenue trends' },
   { Icon: CreditCard, tabKey: 'payments', name: 'Payments', desc: 'bKash, Nagad, card payments' },
-  { Icon: Bell, tabKey: 'notifications', name: 'Notifications', desc: 'Sound alerts, push, SMS' },
+  { Icon: MessageSquare, tabKey: 'notifications', name: 'Feedback', desc: 'Customer reviews & comments' },
   { Icon: Users, tabKey: 'staff', name: 'Staff Management', desc: 'Multiple accounts with roles' },
   { Icon: Package, tabKey: 'inventory', name: 'Inventory', desc: 'Track ingredients & stock' },
   { Icon: Gift, tabKey: 'loyalty', name: 'Loyalty Program', desc: 'Points, coupons, promos' },

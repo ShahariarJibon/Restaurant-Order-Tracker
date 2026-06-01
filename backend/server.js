@@ -12,6 +12,7 @@ import ratingRoutes from './routes/ratings.js';
 import superAdminRoutes from './routes/superadmin.js';
 import paymentRoutes from './routes/payments.js';
 import analyticsRoutes from './routes/analytics.js';
+import feedbackRoutes from './routes/feedback.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api/tables', tableRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/feedback', feedbackRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 
 app.get('/api/health', (req, res) => {

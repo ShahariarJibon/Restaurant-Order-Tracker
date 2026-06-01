@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getSelectedCurrency, fetchRates, convertPrice, formatPrice } from '../utils/currency';
-import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle, Sparkles } from '../components/Icons';
+import { UtensilsCrossed, WifiOff, ShoppingCart, ClipboardList, CheckCircle, Sparkles, MessageSquare } from '../components/Icons';
 import CustomerDesktopLayout from '../components/CustomerDesktopLayout';
 
 function CartPanel({ cart, setCart, customerName, setCustomerName, onPlaceOrder, placing, onClose, rates, currency, isPro, restaurantId, tableId }) {
@@ -146,6 +146,11 @@ export default function CustomerMenu() {
   const [rates, setRates] = useState(null);
   const [currency, setCurrency] = useState(getSelectedCurrency());
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 900);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackName, setFeedbackName] = useState(localStorage.getItem('feedback_name') || '');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 900);
@@ -231,6 +236,21 @@ export default function CustomerMenu() {
       setError('Failed to place order. Try again.');
       setPlacing(false);
     }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackMessage.trim()) return;
+    setSubmittingFeedback(true);
+    try {
+      await axios.post('/api/feedback', {
+        restaurant_id: restaurantId,
+        customer_name: feedbackName.trim() || 'Anonymous',
+        message: feedbackMessage.trim(),
+      });
+      localStorage.setItem('feedback_name', feedbackName);
+      setFeedbackSubmitted(true);
+    } catch {}
+    setSubmittingFeedback(false);
   };
 
   if (error === 'Restaurant not found') {
@@ -407,6 +427,73 @@ export default function CustomerMenu() {
           <ClipboardList size={24} />
           <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
         </button>
+      )}
+
+      <button
+        onClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
+        style={{
+          position: 'fixed', bottom: cartCount > 0 ? 80 : 90, right: 20, zIndex: 999,
+          background: 'var(--orange)', color: 'white', border: 'none', borderRadius: '50%',
+          width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+        }}
+        title="Send Feedback"
+      >
+        <MessageSquare size={22} />
+      </button>
+
+      {showFeedback && (
+        <div className="modal-overlay" onClick={() => setShowFeedback(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 380, paddingTop: 28 }}>
+            <h2 style={{ fontSize: 18, marginBottom: 4 }}>Send Feedback</h2>
+            <p style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 16 }}>
+              Share your thoughts about the food and service.
+            </p>
+            {feedbackSubmitted ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <MessageSquare size={40} style={{ color: 'var(--green)', marginBottom: 12 }} />
+                <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Thank You!</p>
+                <p style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 16 }}>Your feedback has been submitted.</p>
+                <button className="btn btn-outline" onClick={() => setShowFeedback(false)}>Close</button>
+              </div>
+            ) : (
+              <>
+                <input
+                  value={feedbackName}
+                  onChange={e => setFeedbackName(e.target.value)}
+                  placeholder="Your name (optional)"
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid var(--gray-200)',
+                    background: 'var(--white)', color: 'var(--gray-900)', fontSize: 14,
+                    fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10,
+                  }}
+                />
+                <textarea
+                  value={feedbackMessage}
+                  onChange={e => setFeedbackMessage(e.target.value)}
+                  placeholder="Write your feedback..."
+                  rows={4}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid var(--gray-200)',
+                    background: 'var(--white)', color: 'var(--gray-900)', fontSize: 14,
+                    fontFamily: 'inherit', outline: 'none', resize: 'vertical', boxSizing: 'border-box',
+                  }}
+                />
+                <div className="modal-actions" style={{ marginTop: 16 }}>
+                  <button className="btn btn-outline" onClick={() => setShowFeedback(false)}>Cancel</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleSubmitFeedback}
+                    disabled={submittingFeedback || !feedbackMessage.trim()}
+                    style={{ flex: 1 }}
+                  >
+                    {submittingFeedback ? 'Sending...' : 'Send Feedback'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
         {showCart && (

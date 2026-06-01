@@ -134,7 +134,15 @@ export async function initDB() {
       `);
       try { await pgPool.query("ALTER TABLE payments ADD COLUMN IF NOT EXISTS screenshot TEXT DEFAULT ''"); } catch {}
     } catch {}
-    console.log('Using PostgreSQL');
+    try {
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS feedback (
+          id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL,
+          customer_name TEXT DEFAULT 'Anonymous', message TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    } catch {}
   } else {
     const SQL = await initSqlJs();
     if (fs.existsSync(DB_PATH)) {
@@ -169,6 +177,7 @@ export async function initDB() {
     try { db.run("CREATE TABLE IF NOT EXISTS ratings (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, table_id TEXT, rating INTEGER NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     try { db.run("CREATE TABLE IF NOT EXISTS payments (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, method TEXT NOT NULL, trx_id TEXT NOT NULL, sender_number TEXT DEFAULT '', amount REAL NOT NULL, plan_type TEXT NOT NULL, status TEXT DEFAULT 'pending', screenshot TEXT DEFAULT '', created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     try { db.run("ALTER TABLE payments ADD COLUMN screenshot TEXT DEFAULT ''"); } catch {}
+    try { db.run("CREATE TABLE IF NOT EXISTS feedback (id TEXT PRIMARY KEY, restaurant_id TEXT NOT NULL, customer_name TEXT DEFAULT 'Anonymous', message TEXT NOT NULL, created_at TEXT DEFAULT (datetime('now')))"); } catch {}
     sqliteSave();
     console.log('Using SQLite');
   }
