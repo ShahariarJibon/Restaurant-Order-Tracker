@@ -323,24 +323,10 @@ export default function CustomerMenu() {
           cart={cart}
           cartCount={cartCount}
           onCartToggle={() => setShowDesktopOrder(true)}
+          onFeedbackClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
         >
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => { setShowFeedback(true); setFeedbackSubmitted(false); }}
-              style={{
-                position: 'absolute', top: -52, right: 0, zIndex: 10,
-                background: 'var(--gray-100)', border: '1px solid var(--gray-200)',
-                color: 'var(--gray-600)', cursor: 'pointer', borderRadius: 8,
-                padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-              }}
-              title="Send Feedback"
-            >
-              <MessageSquare size={16} /> Feedback
-            </button>
-            <div className="cd-food-grid">
-              {renderMenuItems()}
-            </div>
+          <div className="cd-food-grid">
+            {renderMenuItems()}
           </div>
         </CustomerDesktopLayout>
         {showDesktopOrder && (

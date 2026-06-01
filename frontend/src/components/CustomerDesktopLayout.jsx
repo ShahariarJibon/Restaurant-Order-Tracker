@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShoppingCart, UtensilsCrossed, Clock, ChefHat, Sparkles } from './Icons';
+import { ShoppingCart, UtensilsCrossed, Clock, ChefHat, Sparkles, MessageSquare } from './Icons';
 
 function PremiumBadge() {
   return (
@@ -14,7 +14,7 @@ function PremiumBadge() {
 
 export default function CustomerDesktopLayout({
   restaurant, tableId, categories, activeCategory, onCategoryChange,
-  cart, cartCount, children, onCartToggle, showCart
+  cart, cartCount, children, onCartToggle, showCart, onFeedbackClick
 }) {
   const [searchParams] = useSearchParams();
   const scrolled = cartCount > 0;
@@ -76,6 +76,17 @@ export default function CustomerDesktopLayout({
             ))}
           </nav>
           <div className="cd-sidebar-footer">
+            <button
+              onClick={onFeedbackClick}
+              style={{
+                background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer',
+                padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, fontWeight: 600, fontFamily: 'inherit', width: '100%',
+              }}
+              title="Send Feedback"
+            >
+              <MessageSquare size={14} /> Feedback
+            </button>
             <div className="cd-sidebar-stats">
               <Clock size={14} />
               <span>Live</span>

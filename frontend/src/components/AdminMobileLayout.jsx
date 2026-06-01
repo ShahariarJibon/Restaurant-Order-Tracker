@@ -19,7 +19,7 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
     const check = async () => {
       try {
         const res = await axios.get('/api/orders/admin');
-        setPendingCount(res.data.filter(o => o.status === 'pending').length);
+        setPendingCount(res.data.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length);
       } catch {}
     };
     check();

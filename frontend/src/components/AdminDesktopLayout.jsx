@@ -37,12 +37,12 @@ function RightPanelOverview({ activeTab }) {
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    axios.get('/api/orders/admin').then(r => setPendingCount(r.data.filter(o => o.status === 'pending').length)).catch(() => {});
+    axios.get('/api/orders/admin').then(r => setPendingCount(r.data.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length)).catch(() => {});
   }, []);
 
   const panels = {
     ...PANEL_DEFS,
-    orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
+    orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} orders waiting`, 'Click an order to manage'] },
   };
 
   const p = panels[activeTab] || panels.home;
@@ -78,7 +78,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
           axios.get('/api/orders/admin'),
           axios.get('/api/orders/stats/dashboard'),
         ]);
-        setPendingCount(o.data.filter(o => o.status === 'pending').length);
+        setPendingCount(o.data.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length);
         setStats(s.data);
       } catch {}
     };
