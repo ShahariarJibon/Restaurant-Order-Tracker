@@ -22,6 +22,7 @@ import SuperAdminReports from './pages/SuperAdminReports';
 import SuperAdminSettings from './pages/SuperAdminSettings';
 import UpgradeToPro from './pages/UpgradeToPro';
 import AdminAnalytics from './pages/AdminAnalytics';
+import AdminPayments from './pages/AdminPayments';
 import ProFeaturePlaceholder from './pages/ProFeaturePlaceholder';
 import {
   ScrollText, BarChart3, CreditCard, Bell, Users, Package, Gift, FileText, Bot,
@@ -107,6 +108,7 @@ function ProtectedAdmin() {
       case 'tables': return <AdminTables />;
       case 'history': return <AdminOrders />;
       case 'analytics': return <AdminAnalytics />;
+      case 'payments': return <AdminPayments />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: {
