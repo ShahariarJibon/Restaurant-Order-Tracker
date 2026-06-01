@@ -7,6 +7,11 @@ import {
   Shield, Star, XCircle, MessageSquare
 } from '../components/Icons';
 
+const PLANS = [
+  { id: 'monthly', label: 'Monthly', price: 499, period: '/month', popular: false },
+  { id: 'yearly', label: 'Yearly', price: 5599, period: '/year', popular: true },
+];
+
 const METHODS = [
   { id: 'bkash', label: 'bKash', color: '#E2136E', bg: '#FCE4EC', img: '/bkash.png' },
   { id: 'nagad', label: 'Nagad', color: '#F58324', bg: '#FFF3E0', img: '/nagad.jpg' },
@@ -21,6 +26,7 @@ const INSTRUCTIONS = {
 
 export default function UpgradeToPro({ onBack }) {
   const { restaurant } = useAuth();
+  const [planType, setPlanType] = useState('monthly');
   const [method, setMethod] = useState('');
   const [trxId, setTrxId] = useState('');
   const [senderNumber, setSenderNumber] = useState('');
@@ -50,7 +56,7 @@ export default function UpgradeToPro({ onBack }) {
         method,
         trxId: trxId.trim(),
         senderNumber: senderNumber.trim(),
-        planType: 'monthly',
+        planType,
         screenshot: screenshot || '',
       });
       if (res.data.success) {
@@ -78,6 +84,8 @@ export default function UpgradeToPro({ onBack }) {
       reader.readAsDataURL(file);
     }
   };
+
+  const amount = PLANS.find(p => p.id === planType)?.price || 499;
 
   const submittedPayment = status?.payment;
   const isProActivated = status?.plan?.plan === 'pro';
@@ -125,6 +133,11 @@ export default function UpgradeToPro({ onBack }) {
               <Clock size={40} color="#FFC107" />
             </div>
             <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Payment verification in progress</h3>
+            {submittedPayment?.plan_type && (
+              <p style={{ fontSize: 13, color: 'var(--gray-400)', marginBottom: 4 }}>
+                ৳{Number(submittedPayment.amount).toFixed(0)} — {submittedPayment.plan_type === 'yearly' ? 'Yearly' : 'Monthly'} Plan
+              </p>
+            )}
             <p style={{ color: 'var(--gray-500)', fontSize: 14, lineHeight: 1.6, maxWidth: 320, margin: '0 auto' }}>
               We manually verify payments during active hours. Your account will be upgraded within 12 hours.
               If it takes longer, please contact our support team.
@@ -154,28 +167,40 @@ export default function UpgradeToPro({ onBack }) {
         <h2>Upgrade to Pro</h2>
       </div>
 
-      {/* Plan Info Card */}
-      <div className="card" style={{ marginBottom: 20, padding: 0, overflow: 'hidden', border: '2px solid #FFC107' }}>
-        <div style={{ background: 'linear-gradient(135deg, #FFFDE7 0%, #FFF8E1 100%)', padding: '24px 20px', textAlign: 'center' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FFC107', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-            <Crown size={30} color="#333" />
-          </div>
-          <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Pro Plan</h3>
-          <div style={{ fontSize: 32, fontWeight: 900, color: 'var(--orange)', marginBottom: 4 }}>৳499</div>
-          <div style={{ fontSize: 14, color: 'var(--gray-500' }}>/ month</div>
-        </div>
-        <div style={{ padding: '16px 20px' }}>
-          {[
-            'Unlimited orders',
-            'Analytics dashboard',
-            'Priority support',
-          ].map((feat, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 14, color: 'var(--gray-700)' }}>
-              <Star size={14} color="#FFC107" />
-              {feat}
-            </div>
-          ))}
-        </div>
+      {/* Plan Selection */}
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: 'var(--gray-700)' }}>
+        Choose Your Plan
+      </h3>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+        {PLANS.map(p => {
+          const selected = planType === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => setPlanType(p.id)}
+              style={{
+                flex: 1, padding: '20px 12px', borderRadius: 16, cursor: 'pointer',
+                border: selected ? '2px solid #FFC107' : '2px solid var(--gray-100)',
+                background: selected ? '#FFFDE7' : 'var(--white)',
+                textAlign: 'center', position: 'relative', fontFamily: 'inherit',
+                boxShadow: selected ? '0 4px 20px rgba(255,193,7,0.2)' : '0 2px 8px rgba(0,0,0,0.04)',
+              }}
+            >
+              {p.popular && (
+                <span style={{
+                  position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                  background: '#FFC107', color: '#333', fontSize: 11, fontWeight: 700,
+                  padding: '3px 12px', borderRadius: 20, whiteSpace: 'nowrap'
+                }}>
+                  <Star size={12} style={{ verticalAlign: 'middle', marginRight: 2 }} /> BEST VALUE
+                </span>
+              )}
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>{p.label}</div>
+              <div style={{ fontWeight: 800, fontSize: 26, color: 'var(--orange)' }}>৳{p.price}</div>
+              <div style={{ fontSize: 13, color: 'var(--gray-400)' }}>{p.period}</div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Payment Method */}
@@ -222,7 +247,7 @@ export default function UpgradeToPro({ onBack }) {
             <div className="card" style={{ marginBottom: 16, background: '#FFFDE7', border: '1px solid #FFF9C4' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <Shield size={18} color="#F59E0B" />
-                <span style={{ fontWeight: 700, fontSize: 15 }}>Send ৳499 to this number</span>
+                <span style={{ fontWeight: 700, fontSize: 15 }}>Send ৳{amount} to this number</span>
               </div>
               <div style={{ fontSize: 13, color: 'var(--gray-600)', marginBottom: 12 }}>
                 Via <strong style={{ color: m?.color }}>{m?.label}</strong> — {instr.type}
@@ -316,7 +341,7 @@ export default function UpgradeToPro({ onBack }) {
               {submitting ? (
                 <>Submitting...</>
               ) : (
-                <><Crown size={18} /> Submit Payment — ৳499</>
+                <><Crown size={18} /> Submit Payment — ৳{amount}</>
               )}
             </button>
           </>
