@@ -75,18 +75,19 @@ export default function CustomerDesktopLayout({
               </button>
             ))}
           </nav>
+          <button
+            onClick={onFeedbackClick}
+            style={{
+              background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer',
+              padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, fontFamily: 'inherit', width: '100%',
+              borderTop: '1px solid var(--gray-100)',
+            }}
+            title="Send Feedback"
+          >
+            <MessageSquare size={14} /> Feedback
+          </button>
           <div className="cd-sidebar-footer">
-            <button
-              onClick={onFeedbackClick}
-              style={{
-                background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer',
-                padding: '4px 0', display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 12, fontWeight: 600, fontFamily: 'inherit', width: '100%',
-              }}
-              title="Send Feedback"
-            >
-              <MessageSquare size={14} /> Feedback
-            </button>
             <div className="cd-sidebar-stats">
               <Clock size={14} />
               <span>Live</span>
