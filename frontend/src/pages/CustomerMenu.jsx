@@ -344,6 +344,59 @@ export default function CustomerMenu() {
             tableId={tableId}
           />
         )}
+        {showFeedback && (
+          <div className="modal-overlay" onClick={() => setShowFeedback(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 380, paddingTop: 28 }}>
+              <h2 style={{ fontSize: 18, marginBottom: 4 }}>Send Feedback</h2>
+              <p style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 16 }}>
+                Share your thoughts about the food and service.
+              </p>
+              {feedbackSubmitted ? (
+                <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                  <MessageSquare size={40} style={{ color: 'var(--green)', marginBottom: 12 }} />
+                  <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Thank You!</p>
+                  <p style={{ fontSize: 13, color: 'var(--gray-500)', marginBottom: 16 }}>Your feedback has been submitted.</p>
+                  <button className="btn btn-outline" onClick={() => setShowFeedback(false)}>Close</button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    value={feedbackName}
+                    onChange={e => setFeedbackName(e.target.value)}
+                    placeholder="Your name (optional)"
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid var(--gray-200)',
+                      background: 'var(--white)', color: 'var(--gray-900)', fontSize: 14,
+                      fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', marginBottom: 10,
+                    }}
+                  />
+                  <textarea
+                    value={feedbackMessage}
+                    onChange={e => setFeedbackMessage(e.target.value)}
+                    placeholder="Write your feedback..."
+                    rows={4}
+                    style={{
+                      width: '100%', padding: '10px 12px', borderRadius: 8, border: '2px solid var(--gray-200)',
+                      background: 'var(--white)', color: 'var(--gray-900)', fontSize: 14,
+                      fontFamily: 'inherit', outline: 'none', resize: 'vertical', boxSizing: 'border-box',
+                    }}
+                  />
+                  <div className="modal-actions" style={{ marginTop: 16 }}>
+                    <button className="btn btn-outline" onClick={() => setShowFeedback(false)}>Cancel</button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSubmitFeedback}
+                      disabled={submittingFeedback || !feedbackMessage.trim()}
+                      style={{ flex: 1 }}
+                    >
+                      {submittingFeedback ? 'Sending...' : 'Send Feedback'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </>
     );
   }
