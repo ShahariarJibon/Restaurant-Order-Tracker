@@ -16,6 +16,23 @@ const NAV = [
   { key: 'settings', label: 'Settings', Icon: Settings },
 ];
 
+const PANEL_DEFS = {
+  home: { Icon: LayoutDashboard, title: 'Dashboard', lines: ['Overview of your restaurant', 'Real-time stats & insights'] },
+  orders: { Icon: ClipboardList, title: 'Order Management', lines: ['Manage incoming orders', 'Track order status'] },
+  menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
+  tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
+  history: { Icon: ScrollText, title: 'Order History', lines: ['View past orders', 'Export to Excel'] },
+  analytics: { Icon: BarChart3, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
+  payments: { Icon: CreditCard, title: 'Payments', lines: ['bKash, Nagad, card payments', 'Coming soon'] },
+  notifications: { Icon: Bell, title: 'Notifications', lines: ['Sound alerts, push, SMS', 'Coming soon'] },
+  staff: { Icon: Users, title: 'Staff Management', lines: ['Multiple accounts with roles', 'Coming soon'] },
+  inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
+  loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
+  billing: { Icon: FileText, title: 'Billing & Reports', lines: ['Invoices, tax reports, export', 'Coming soon'] },
+  ai: { Icon: Bot, title: 'AI Features', lines: ['Smart suggestions & predictions', 'Coming soon'] },
+  settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
+};
+
 function RightPanelOverview({ activeTab }) {
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -23,23 +40,10 @@ function RightPanelOverview({ activeTab }) {
     axios.get('/api/orders/admin').then(r => setPendingCount(r.data.filter(o => o.status === 'pending').length)).catch(() => {});
   }, []);
 
-  const allPanels = {
-    home: { Icon: LayoutDashboard, title: 'Dashboard', lines: ['Overview of your restaurant', 'Real-time stats & insights'] },
+  const panels = {
+    ...PANEL_DEFS,
     orders: { Icon: ClipboardList, title: 'Order Management', lines: [`${pendingCount} pending orders`, 'Click an order to manage'] },
-    menu: { Icon: UtensilsCrossed, title: 'Menu Builder', lines: ['Manage items & categories', 'Toggle availability'] },
-    tables: { Icon: QrCode, title: 'Tables & QR', lines: ['Add or remove tables', 'Generate QR codes'] },
-    history: { Icon: ScrollText, title: 'Order History', lines: ['View past orders', 'Export to Excel'] },
-    analytics: { Icon: BarChart3, title: 'Analytics', lines: ['Revenue trends & KPIs', 'Best sellers & insights'] },
-    payments: { Icon: CreditCard, title: 'Payments', lines: ['bKash, Nagad, card payments', 'Coming soon'] },
-    notifications: { Icon: Bell, title: 'Notifications', lines: ['Sound alerts, push, SMS', 'Coming soon'] },
-    staff: { Icon: Users, title: 'Staff Management', lines: ['Multiple accounts with roles', 'Coming soon'] },
-    inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
-    loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
-    billing: { Icon: FileText, title: 'Billing & Reports', lines: ['Invoices, tax reports, export', 'Coming soon'] },
-    ai: { Icon: Bot, title: 'AI Features', lines: ['Smart suggestions & predictions', 'Coming soon'] },
-    settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
   };
-  const panels = allPanels;
 
   const p = panels[activeTab] || panels.home;
   const PanelIcon = p.Icon;
@@ -176,7 +180,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
         {/* TOPBAR */}
         <header className="desktop-topbar">
           <div className="topbar-left">
-            <h2 className="topbar-title">{NAV.find(t => t.key === activeTab)?.label || panels[activeTab]?.title || 'Dashboard'}</h2>
+            <h2 className="topbar-title">{NAV.find(t => t.key === activeTab)?.label || PANEL_DEFS[activeTab]?.title || 'Dashboard'}</h2>
           </div>
           <div className="topbar-right">
             {stats && (
