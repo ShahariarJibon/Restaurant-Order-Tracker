@@ -26,6 +26,7 @@ import AdminPayments from './pages/AdminPayments';
 import AdminFeedback from './pages/AdminFeedback';
 import AdminHistory from './pages/AdminHistory';
 import AdminStaff from './pages/AdminStaff';
+import AdminInventory from './pages/AdminInventory';
 import StaffLogin from './pages/StaffLogin';
 import ChefDisplay from './pages/ChefDisplay';
 import WaiterDisplay from './pages/WaiterDisplay';
@@ -117,6 +118,7 @@ function ProtectedAdmin() {
       case 'payments': return <AdminPayments />;
       case 'notifications': return isPro ? <AdminFeedback /> : <AdminHome />;
       case 'staff': return isPro ? <AdminStaff /> : <AdminHome />;
+      case 'inventory': return isPro ? <AdminInventory /> : <AdminHome />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: {
