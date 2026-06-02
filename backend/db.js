@@ -209,6 +209,10 @@ export function getDB() {
   return usingPg ? pgPool : db;
 }
 
+export function isUsingPg() {
+  return usingPg;
+}
+
 export async function queryAll(sql, params = []) {
   if (usingPg) {
     const result = await pgPool.query(convertSql(sql), params);
