@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   LayoutDashboard, Store, CreditCard, Star, AlertTriangle, Settings,
   LogOut, ChevronRight, DollarSign, Users, ShoppingCart, Clock,
@@ -16,6 +17,20 @@ const NAV_ITEMS = [
 
 export default function SuperAdminLayout({ activeTab, onTabChange, onLogout, children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pendingPayments, setPendingPayments] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('super_token');
+        const res = await axios.get('/api/super-admin/stats', { headers: { Authorization: `Bearer ${token}` } });
+        setPendingPayments(res.data.pendingApprovals || 0);
+      } catch {}
+    };
+    load();
+    const interval = setInterval(load, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="super-layout">
@@ -44,9 +59,17 @@ export default function SuperAdminLayout({ activeTab, onTabChange, onLogout, chi
               key={key}
               className={`super-nav-item ${activeTab === key ? 'active' : ''}`}
               onClick={() => { onTabChange(key); setMobileOpen(false); }}
+              style={{ position: 'relative' }}
             >
               <Icon size={18} />
               <span>{label}</span>
+              {key === 'payments' && pendingPayments > 0 && (
+                <span style={{
+                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                  width: 10, height: 10, borderRadius: '50%', background: '#EF4444',
+                  boxShadow: '0 0 6px rgba(239,68,68,0.6)',
+                }} />
+              )}
               {activeTab === key && <ChevronRight size={14} className="super-nav-arrow" />}
             </button>
           ))}

@@ -24,6 +24,7 @@ import UpgradeToPro from './pages/UpgradeToPro';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminPayments from './pages/AdminPayments';
 import AdminFeedback from './pages/AdminFeedback';
+import AdminHistory from './pages/AdminHistory';
 import ProFeaturePlaceholder from './pages/ProFeaturePlaceholder';
 import {
   ScrollText, BarChart3, CreditCard, MessageSquare, Users, Package, Gift, FileText, Bot,
@@ -107,7 +108,7 @@ function ProtectedAdmin() {
       case 'orders': return <AdminOrders />;
       case 'menu': return <AdminMenu />;
       case 'tables': return <AdminTables />;
-      case 'history': return <AdminOrders />;
+      case 'history': return <AdminHistory />;
       case 'analytics': return <AdminAnalytics />;
       case 'payments': return <AdminPayments />;
       case 'notifications': return isPro ? <AdminFeedback /> : <AdminHome />;

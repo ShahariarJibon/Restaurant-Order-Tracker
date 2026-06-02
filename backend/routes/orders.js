@@ -156,6 +156,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     { header: 'Order Items', key: 'items', width: 40 },
     { header: 'Price', key: 'price', width: 12 },
     { header: 'Customer', key: 'customer', width: 18 },
+    { header: 'Payment', key: 'payment', width: 18 },
     { header: 'Order ID', key: 'orderId', width: 14 },
     { header: 'Table', key: 'table', width: 10 },
   ];
@@ -181,7 +182,7 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
     ws.getCell(`A${rowIdx}`).value = dateKey;
     ws.getCell(`A${rowIdx}`).font = { bold: true, size: 13, color: { argb: 'FF8C42' } };
     ws.getCell(`A${rowIdx}`).alignment = { vertical: 'middle' };
-    ws.mergeCells(`A${rowIdx}:F${rowIdx}`);
+    ws.mergeCells(`A${rowIdx}:G${rowIdx}`);
     ws.getRow(rowIdx).height = 28;
     rowIdx++;
 
@@ -192,13 +193,15 @@ router.get('/export/excel', authMiddleware, async (req, res) => {
       });
       const itemsStr = order.items.map(i => `${i.item_name} ×${i.quantity}`).join(', ');
       const shortId = `#${order.id.slice(0, 6).toUpperCase()}`;
+      const paymentStr = order.payment_method ? `${order.payment_method}${order.trx_id ? ` (${order.trx_id})` : ''}` : '—';
 
       ws.getCell(`A${rowIdx}`).value = dt;
       ws.getCell(`B${rowIdx}`).value = itemsStr;
       ws.getCell(`C${rowIdx}`).value = Number(order.total).toFixed(2);
       ws.getCell(`D${rowIdx}`).value = order.customer_name || 'Guest';
-      ws.getCell(`E${rowIdx}`).value = shortId;
-      ws.getCell(`F${rowIdx}`).value = order.table_number || '—';
+      ws.getCell(`E${rowIdx}`).value = paymentStr;
+      ws.getCell(`F${rowIdx}`).value = shortId;
+      ws.getCell(`G${rowIdx}`).value = order.table_number || '—';
       ws.getRow(rowIdx).height = 22;
       rowIdx++;
     }
