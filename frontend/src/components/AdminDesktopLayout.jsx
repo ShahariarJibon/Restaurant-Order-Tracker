@@ -5,7 +5,8 @@ import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency'
 import {
   LayoutDashboard, ClipboardList, UtensilsCrossed, QrCode, Settings,
   Hourglass, LogOut, ScrollText, TrendingUp, BarChart3,
-  CreditCard, Bell, Users, Package, Gift, FileText, Bot, MessageSquare,
+  CreditCard, Bell, Users, Package, Gift, Bot, MessageSquare,
+  Mail, X, Phone,
 } from './Icons';
 
 const NAV = [
@@ -28,7 +29,6 @@ const PANEL_DEFS = {
   staff: { Icon: Users, title: 'Staff Management', lines: ['Multiple accounts with roles', 'Coming soon'] },
   inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
   loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
-  billing: { Icon: FileText, title: 'Billing & Reports', lines: ['Invoices, tax reports, export', 'Coming soon'] },
   ai: { Icon: Bot, title: 'AI Insights', lines: ['Real-time business intelligence', 'Smart predictions & alerts'] },
   settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
 };
@@ -68,6 +68,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [rates, setRates] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const currency = getSelectedCurrency();
 
   useEffect(() => { fetchRates().then(setRates); }, []);
@@ -169,13 +170,13 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Gift size={18} /></span>
                 <span className="sidebar-nav-label">Loyalty</span>
               </button>
-              <button className={`sidebar-nav-item ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => onTabChange('billing')}>
-                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><FileText size={18} /></span>
-                <span className="sidebar-nav-label">Billing</span>
-              </button>
               <button className={`sidebar-nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Bot size={18} /></span>
                 <span className="sidebar-nav-label">AI</span>
+              </button>
+              <button className="sidebar-nav-item" onClick={() => setContactOpen(true)}>
+                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Mail size={18} /></span>
+                <span className="sidebar-nav-label">Contact</span>
               </button>
             </>
           )}
@@ -240,6 +241,41 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
           </aside>
         </div>
       </div>
+
+      {/* Contact Developer Modal */}
+      {contactOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.5)', padding: 20,
+        }} onClick={() => setContactOpen(false)}>
+          <div style={{
+            background: 'var(--card-bg, white)', borderRadius: 16, padding: 28,
+            maxWidth: 360, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Contact Developer</h3>
+              <button onClick={() => setContactOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: 'var(--gray-400)' }}><X size={20} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, background: 'var(--gray-50, #F9FAFB)' }}>
+                <Mail size={18} color="var(--orange)" />
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--gray-400)', fontWeight: 600 }}>EMAIL</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-900)' }}>shahariarhossain674@gmail.com</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, borderRadius: 10, background: 'var(--gray-50, #F9FAFB)' }}>
+                <Phone size={18} color="var(--orange)" />
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--gray-400)', fontWeight: 600 }}>PHONE</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-900)' }}>+8801739849009</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

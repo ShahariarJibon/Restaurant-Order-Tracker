@@ -106,7 +106,7 @@ function ProtectedAdmin() {
     return <ProFeaturePlaceholder name={info?.name || key} desc={info?.desc || ''} Icon={Icon} />;
   };
 
-  const PRO_TABS = ['payments', 'notifications', 'staff', 'inventory', 'loyalty', 'billing', 'ai'];
+  const PRO_TABS = ['payments', 'notifications', 'staff', 'inventory', 'loyalty', 'ai'];
 
   const renderTab = () => {
     switch (activeTab) {

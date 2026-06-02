@@ -15,7 +15,6 @@ const PRO_FEATURES = [
   { Icon: Users, tabKey: 'staff', name: 'Staff Management', desc: 'Multiple accounts with roles' },
   { Icon: Package, tabKey: 'inventory', name: 'Inventory', desc: 'Track ingredients & stock' },
   { Icon: Gift, tabKey: 'loyalty', name: 'Loyalty Program', desc: 'Points, coupons, promos' },
-  { Icon: FileText, tabKey: 'billing', name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
   { Icon: Bot, tabKey: 'ai', name: 'AI Insights', desc: 'Smart predictions & analytics' },
 ];
 
