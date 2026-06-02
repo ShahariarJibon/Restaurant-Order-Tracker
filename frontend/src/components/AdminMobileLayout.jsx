@@ -43,7 +43,7 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
   return (
     <div className="admin-app">
       {children}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <nav className="bottom-nav">
         {TABS.map(tab => {
           const Icon = tab.Icon;
           const isProTab = tab.key === 'settings' && restaurant?.plan === 'pro';
