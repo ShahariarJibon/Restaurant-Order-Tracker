@@ -92,11 +92,18 @@ router.get('/public/table/:tableId', async (req, res) => {
 
 router.put('/:id/status', authMiddleware, async (req, res) => {
   const { status } = req.body;
-  if (!['pending', 'preparing', 'done', 'cancelled', 'waiting_verification', 'payment_failed'].includes(status)) {
+  if (!['pending', 'approved', 'preparing', 'cooking', 'ready', 'delivered', 'completed', 'done', 'cancelled', 'waiting_verification', 'payment_failed'].includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }
   await execute('UPDATE orders SET status = ? WHERE id = ? AND restaurant_id = ?', [status, req.params.id, req.restaurant.id]);
   res.json({ success: true });
+});
+
+router.put('/:id/confirm', authMiddleware, async (req, res) => {
+  const order = await queryOne('SELECT * FROM orders WHERE id = ? AND restaurant_id = ?', [req.params.id, req.restaurant.id]);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  await execute("UPDATE orders SET status = 'approved' WHERE id = ? AND restaurant_id = ?", [req.params.id, req.restaurant.id]);
+  res.json({ success: true, message: 'Order confirmed, sent to kitchen' });
 });
 
 router.put('/:id/verify-payment', authMiddleware, async (req, res) => {
@@ -104,10 +111,10 @@ router.put('/:id/verify-payment', authMiddleware, async (req, res) => {
   if (!order) return res.status(404).json({ error: 'Order not found' });
   if (order.payment_status !== 'pending') return res.status(400).json({ error: 'Payment already processed' });
   await execute(
-    "UPDATE orders SET payment_status = 'verified', status = 'pending' WHERE id = ? AND restaurant_id = ?",
+    "UPDATE orders SET payment_status = 'verified', status = 'approved' WHERE id = ? AND restaurant_id = ?",
     [req.params.id, req.restaurant.id]
   );
-  res.json({ success: true, message: 'Payment verified, order confirmed' });
+  res.json({ success: true, message: 'Payment verified, order sent to kitchen' });
 });
 
 router.put('/:id/reject-payment', authMiddleware, async (req, res) => {

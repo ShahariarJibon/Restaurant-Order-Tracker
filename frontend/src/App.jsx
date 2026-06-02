@@ -25,6 +25,10 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminPayments from './pages/AdminPayments';
 import AdminFeedback from './pages/AdminFeedback';
 import AdminHistory from './pages/AdminHistory';
+import AdminStaff from './pages/AdminStaff';
+import StaffLogin from './pages/StaffLogin';
+import ChefDisplay from './pages/ChefDisplay';
+import WaiterDisplay from './pages/WaiterDisplay';
 import ProFeaturePlaceholder from './pages/ProFeaturePlaceholder';
 import {
   ScrollText, BarChart3, CreditCard, MessageSquare, Users, Package, Gift, FileText, Bot,
@@ -112,6 +116,7 @@ function ProtectedAdmin() {
       case 'analytics': return <AdminAnalytics />;
       case 'payments': return <AdminPayments />;
       case 'notifications': return isPro ? <AdminFeedback /> : <AdminHome />;
+      case 'staff': return isPro ? <AdminStaff /> : <AdminHome />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: {
@@ -169,6 +174,9 @@ export default function App() {
         <Route path="/menu/:restaurantId" element={<CustomerMenu />} />
         <Route path="/payment/:restaurantId" element={<CustomerPayment />} />
         <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+        <Route path="/staff-login" element={<StaffLogin />} />
+        <Route path="/chef" element={<ChefDisplay />} />
+        <Route path="/waiter" element={<WaiterDisplay />} />
         <Route path="/login/admin" element={<SuperAdminApp />} />
         <Route path="/login" element={<AdminLogin />} />
         <Route path="/" element={<ProtectedAdmin />} />

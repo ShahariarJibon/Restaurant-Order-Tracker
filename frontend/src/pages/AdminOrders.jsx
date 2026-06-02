@@ -4,9 +4,16 @@ import { getSelectedCurrency, fetchRates, formatPrice } from '../utils/currency'
 import { cacheData, getCachedData } from '../utils/dataCache';
 import { ClipboardList, Trash2, CreditCard, CheckCircle, XCircle, Phone, Download } from '../components/Icons';
 
+const STATUS_GROUPS = [
+  { key: 'new', label: 'New Orders', statuses: ['pending', 'waiting_verification'], color: 'var(--yellow)' },
+  { key: 'approved', label: 'Approved', statuses: ['approved'], color: 'var(--green)' },
+  { key: 'kitchen', label: 'Cooking', statuses: ['preparing', 'cooking', 'ready'], color: 'var(--orange)' },
+  { key: 'done', label: 'Completed', statuses: ['delivered', 'completed', 'done'], color: 'var(--gray-500)' },
+];
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState('pending');
+  const [filter, setFilter] = useState('new');
   const [rates, setRates] = useState(null);
   const currency = getSelectedCurrency();
 
@@ -28,13 +35,14 @@ export default function AdminOrders() {
     return () => clearInterval(interval);
   }, []);
 
-  const updateStatus = async (orderId, currentStatus) => {
-    const flow = ['pending', 'preparing', 'done'];
-    const idx = flow.indexOf(currentStatus);
-    if (idx >= flow.length - 1) return;
-    const next = flow[idx + 1];
-    await axios.put(`/api/orders/${orderId}/status`, { status: next });
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: next } : o));
+  const confirmOrder = async (orderId) => {
+    await axios.put(`/api/orders/${orderId}/confirm`);
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'approved' } : o));
+  };
+
+  const updateStatus = async (orderId, status) => {
+    await axios.put(`/api/orders/${orderId}/status`, { status });
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
   };
 
   const deleteOrder = async (orderId) => {
@@ -44,16 +52,17 @@ export default function AdminOrders() {
 
   const deleteAllDone = async () => {
     await axios.delete('/api/orders/done/all');
-    setOrders(prev => prev.filter(o => o.status !== 'done'));
+    setOrders(prev => prev.filter(o => o.status !== 'done' && o.status !== 'completed'));
   };
 
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter || (filter === 'pending' && (o.status === 'waiting_verification' || o.payment_status === 'pending')));
+  const activeGroup = STATUS_GROUPS.find(g => g.key === filter) || STATUS_GROUPS[0];
+  const filtered = filter === 'all' ? orders : orders.filter(o => activeGroup.statuses.includes(o.status) || (filter === 'new' && (o.status === 'waiting_verification' || o.payment_status === 'pending')));
 
-  const counts = {
-    pending: orders.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length,
-    preparing: orders.filter(o => o.status === 'preparing').length,
-    done: orders.filter(o => o.status === 'done').length,
-  };
+  const counts = {};
+  for (const g of STATUS_GROUPS) {
+    counts[g.key] = orders.filter(o => g.statuses.includes(o.status)).length;
+  }
+  counts.new = orders.filter(o => o.status === 'pending' || o.status === 'waiting_verification').length;
 
   return (
     <div className="tab-content">
@@ -63,29 +72,21 @@ export default function AdminOrders() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16, overflowX: 'auto' }}>
-        {[
-          { key: 'pending', label: `Pending (${counts.pending})`, color: 'var(--yellow)' },
-          { key: 'preparing', label: `Preparing (${counts.preparing})`, color: 'var(--orange)' },
-          { key: 'done', label: `Done (${counts.done})`, color: 'var(--green)' },
-        ].map(f => (
+        {STATUS_GROUPS.map(g => (
           <button
-            key={f.key}
-            className={`btn btn-sm ${filter === f.key ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setFilter(f.key)}
-            style={filter === f.key && f.color ? { background: f.color, borderColor: f.color } : {}}
+            key={g.key}
+            className={`btn btn-sm ${filter === g.key ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setFilter(g.key)}
+            style={filter === g.key && g.color ? { background: g.color, borderColor: g.color } : {}}
           >
-            {f.label}
+            {g.label} ({counts[g.key] || 0})
           </button>
         ))}
       </div>
 
       {filter === 'done' && counts.done > 0 && (
-        <button
-          className="btn btn-danger btn-sm"
-          style={{ marginBottom: 12, width: '100%' }}
-          onClick={deleteAllDone}
-        >
-          <Trash2 size={16} /> Delete All Done Orders
+        <button className="btn btn-danger btn-sm" style={{ marginBottom: 12, width: '100%' }} onClick={deleteAllDone}>
+          <Trash2 size={16} /> Delete All Completed Orders
         </button>
       )}
 
@@ -145,7 +146,7 @@ export default function AdminOrders() {
                 <div className="order-card-actions">
                   {isPaymentVerification && (
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={async () => { await axios.put(`/api/orders/${order.id}/verify-payment`); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'verified', status: 'pending' } : o)); }}>
+                      <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={async () => { await axios.put(`/api/orders/${order.id}/verify-payment`); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'verified', status: 'approved' } : o)); }}>
                         <CheckCircle size={14} /> Confirm
                       </button>
                       <button className="btn btn-sm btn-danger" onClick={async () => { await axios.put(`/api/orders/${order.id}/reject-payment`); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, payment_status: 'rejected', status: 'payment_failed' } : o)); }}>
@@ -155,20 +156,22 @@ export default function AdminOrders() {
                   )}
                   {order.status === 'pending' && !isPaymentVerification && (
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-primary btn-sm" onClick={() => updateStatus(order.id, order.status)}>
-                        Accept
+                      <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={() => confirmOrder(order.id)}>
+                        <CheckCircle size={14} /> Confirm
                       </button>
                       <button className="btn btn-sm btn-danger" onClick={async () => { await axios.put(`/api/orders/${order.id}/status`, { status: 'cancelled' }); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o)); }}>
-                        Decline
+                        <XCircle size={14} /> Cancel
                       </button>
                     </div>
                   )}
-                  {order.status === 'preparing' && (
-                    <button className="btn btn-sm" style={{ background: 'var(--green)', color: 'white' }} onClick={() => updateStatus(order.id, order.status)}>
-                      Mark Done
-                    </button>
+                  {order.status === 'approved' && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-sm" style={{ background: '#8B5CF6', color: 'white' }} onClick={() => updateStatus(order.id, 'preparing')}>
+                        Send to Chef
+                      </button>
+                    </div>
                   )}
-                  {order.status === 'done' && (
+                  {(order.status === 'done' || order.status === 'completed' || order.status === 'delivered') && (
                     <button className="btn btn-sm btn-danger" onClick={() => deleteOrder(order.id)}>
                       <Trash2 size={16} />
                     </button>
