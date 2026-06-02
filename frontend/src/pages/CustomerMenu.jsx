@@ -482,18 +482,20 @@ export default function CustomerMenu() {
         </div>
       )}
 
-      {cartCount > 0 && (
-        <button className="floating-cart" onClick={() => setShowCart(true)}>
-          <ShoppingCart size={24} />
-          <span className="floating-cart-badge">{cartCount}</span>
-        </button>
-      )}
-      {cartCount === 0 && localStorage.getItem('lastOrderId') && localStorage.getItem('lastRestaurantId') === restaurantId && (
-        <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${localStorage.getItem('lastOrderId')}?table=${localStorage.getItem('lastTableId') || ''}`)}>
-          <ClipboardList size={24} />
-          <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
-        </button>
-      )}
+      <div style={{ position: 'fixed', bottom: 80, right: 16, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 100 }}>
+        {cartCount > 0 && (
+          <button className="floating-cart" onClick={() => setShowCart(true)}>
+            <ShoppingCart size={24} />
+            <span className="floating-cart-badge">{cartCount}</span>
+          </button>
+        )}
+        {localStorage.getItem('lastOrderId') && localStorage.getItem('lastRestaurantId') === restaurantId && (
+          <button className="floating-cart" onClick={() => navigate(`/order-confirmation/${localStorage.getItem('lastOrderId')}?table=${localStorage.getItem('lastTableId') || ''}`)}>
+            <ClipboardList size={24} />
+            <span style={{ fontSize: 10, marginTop: 2 }}>Track</span>
+          </button>
+        )}
+      </div>
 
       {showFeedback && (
         <div className="modal-overlay" onClick={() => setShowFeedback(false)}>

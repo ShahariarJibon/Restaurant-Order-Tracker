@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { ShoppingCart, UtensilsCrossed, Clock, ChefHat, Sparkles, MessageSquare } from './Icons';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ShoppingCart, UtensilsCrossed, Clock, ChefHat, Sparkles, MessageSquare, ClipboardList } from './Icons';
 
 function PremiumBadge() {
   return (
@@ -17,7 +17,11 @@ export default function CustomerDesktopLayout({
   cart, cartCount, children, onCartToggle, showCart, onFeedbackClick
 }) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const scrolled = cartCount > 0;
+  const lastOrderId = localStorage.getItem('lastOrderId');
+  const lastRestaurantId = localStorage.getItem('lastRestaurantId');
+  const currentRestaurantId = window.location.pathname.split('/menu/')[1]?.split('?')[0] || '';
 
   return (
     <div className="customer-desktop">
@@ -81,12 +85,25 @@ export default function CustomerDesktopLayout({
               background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer',
               padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, fontWeight: 600, fontFamily: 'inherit', width: '100%',
-              borderTop: '1px solid var(--gray-100)',
             }}
             title="Send Feedback"
           >
             <MessageSquare size={14} /> Feedback
           </button>
+          {lastOrderId && lastRestaurantId === currentRestaurantId && (
+            <button
+              onClick={() => navigate(`/order-confirmation/${lastOrderId}?table=${tableId || ''}`)}
+              style={{
+                background: 'none', border: 'none', color: 'var(--orange)', cursor: 'pointer',
+                padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 12, fontWeight: 600, fontFamily: 'inherit', width: '100%',
+                borderTop: '1px solid var(--gray-100)',
+              }}
+              title="Track Order"
+            >
+              <ClipboardList size={14} /> Track Order
+            </button>
+          )}
           <div className="cd-sidebar-footer">
             <div className="cd-sidebar-stats">
               <Clock size={14} />
@@ -114,6 +131,15 @@ export default function CustomerDesktopLayout({
               <ShoppingCart size={32} />
               <p>Your cart is empty</p>
               <p className="cd-cart-empty-sub">Tap + on any item to add</p>
+              {lastOrderId && lastRestaurantId === currentRestaurantId && (
+                <button
+                  onClick={() => navigate(`/order-confirmation/${lastOrderId}?table=${tableId || ''}`)}
+                  className="btn btn-sm"
+                  style={{ marginTop: 12, background: 'var(--orange)', color: 'white', display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <ClipboardList size={14} /> Track Last Order
+                </button>
+              )}
             </div>
           ) : (
             <>
