@@ -16,7 +16,6 @@ const PRO_FEATURES = [
   { Icon: Package, tabKey: 'inventory', name: 'Inventory', desc: 'Track ingredients & stock' },
   { Icon: Gift, tabKey: 'loyalty', name: 'Loyalty Program', desc: 'Points, coupons, promos' },
   { Icon: FileText, tabKey: 'billing', name: 'Billing & Reports', desc: 'Invoices, tax reports, export' },
-  { Icon: Bot, tabKey: 'ai', name: 'AI Features', desc: 'Smart suggestions & predictions' },
 ];
 
 export default function AdminSettings({ onGoToUpgrade, onNavigate }) {

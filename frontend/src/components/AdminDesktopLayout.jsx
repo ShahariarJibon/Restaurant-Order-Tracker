@@ -29,7 +29,7 @@ const PANEL_DEFS = {
   inventory: { Icon: Package, title: 'Inventory', lines: ['Track ingredients & stock', 'Coming soon'] },
   loyalty: { Icon: Gift, title: 'Loyalty Program', lines: ['Points, coupons, promos', 'Coming soon'] },
   billing: { Icon: FileText, title: 'Billing & Reports', lines: ['Invoices, tax reports, export', 'Coming soon'] },
-  ai: { Icon: Bot, title: 'AI Features', lines: ['Smart suggestions & predictions', 'Coming soon'] },
+  ai: { Icon: Bot, title: 'AI Insights', lines: ['Real-time business intelligence', 'Smart predictions & alerts'] },
   settings: { Icon: Settings, title: 'Restaurant Settings', lines: ['Theme, currency, logo', 'Upgrade to Pro'] },
 };
 
