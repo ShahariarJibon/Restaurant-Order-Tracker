@@ -137,6 +137,11 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
               </button>
             );
           })}
+          <div className="sidebar-section-label">INSIGHTS</div>
+          <button className={`sidebar-nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
+            <span className="sidebar-nav-icon" style={{ color: 'var(--orange)' }}><Bot size={18} /></span>
+            <span className="sidebar-nav-label">AI Insights</span>
+          </button>
           {restaurant?.plan === 'pro' && (
             <>
               <div className="sidebar-section-label">PRO FEATURES</div>
@@ -172,10 +177,6 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
               <button className={`sidebar-nav-item ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => onTabChange('billing')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><FileText size={18} /></span>
                 <span className="sidebar-nav-label">Billing</span>
-              </button>
-              <button className={`sidebar-nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
-                <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Bot size={18} /></span>
-                <span className="sidebar-nav-label">AI</span>
               </button>
             </>
           )}

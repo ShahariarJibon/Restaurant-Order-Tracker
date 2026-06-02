@@ -106,7 +106,7 @@ function ProtectedAdmin() {
     return <ProFeaturePlaceholder name={info?.name || key} desc={info?.desc || ''} Icon={Icon} />;
   };
 
-  const PRO_TABS = ['payments', 'notifications', 'staff', 'inventory', 'loyalty', 'billing', 'ai'];
+  const PRO_TABS = ['payments', 'notifications', 'staff', 'inventory', 'loyalty', 'billing'];
 
   const renderTab = () => {
     switch (activeTab) {
@@ -120,7 +120,7 @@ function ProtectedAdmin() {
       case 'notifications': return isPro ? <AdminFeedback /> : <AdminHome />;
       case 'staff': return isPro ? <AdminStaff /> : <AdminHome />;
       case 'inventory': return isPro ? <AdminInventory /> : <AdminHome />;
-      case 'ai': return isPro ? <AdminAI /> : <AdminHome />;
+      case 'ai': return <AdminAI />;
       case 'settings': return <AdminSettings onGoToUpgrade={() => setActiveTab('upgrade')} onNavigate={setActiveTab} />;
       case 'upgrade': return <UpgradeToPro onBack={() => setActiveTab('settings')} />;
       default: {

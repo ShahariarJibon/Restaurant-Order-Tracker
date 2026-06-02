@@ -63,6 +63,10 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
             </button>
           );
         })}
+          <button className={`nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
+            <span className="nav-icon"><Bot size={20} /></span>
+            AI
+          </button>
         {restaurant?.plan === 'pro' && (
             <>
               <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => onTabChange('history')}>
@@ -99,10 +103,6 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
               <button className={`nav-item ${activeTab === 'billing' ? 'active' : ''}`} onClick={() => onTabChange('billing')}>
                 <span className="nav-icon"><FileText size={20} /></span>
                 Billing
-              </button>
-              <button className={`nav-item ${activeTab === 'ai' ? 'active' : ''}`} onClick={() => onTabChange('ai')}>
-                <span className="nav-icon"><Bot size={20} /></span>
-                AI
               </button>
             </>
           )}
