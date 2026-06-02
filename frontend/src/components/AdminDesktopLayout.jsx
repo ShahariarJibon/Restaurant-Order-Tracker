@@ -65,6 +65,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
   const { restaurant, logout } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
   const [stats, setStats] = useState(null);
+  const [feedbackCount, setFeedbackCount] = useState(0);
   const [rates, setRates] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const currency = getSelectedCurrency();
@@ -84,6 +85,18 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
     };
     fetch();
     const interval = setInterval(fetch, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const res = await axios.get('/api/feedback/admin');
+        setFeedbackCount(res.data.length);
+      } catch {}
+    };
+    fetchFeedback();
+    const interval = setInterval(fetchFeedback, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -142,6 +155,7 @@ export default function AdminDesktopLayout({ activeTab, onTabChange, children })
               <button className={`sidebar-nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><MessageSquare size={18} /></span>
                 <span className="sidebar-nav-label">Feedback</span>
+                {feedbackCount > 0 && <span className="sidebar-badge" style={{ background: '#EF4444' }}>{feedbackCount}</span>}
               </button>
               <button className={`sidebar-nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
                 <span className="sidebar-nav-icon" style={{ color: 'var(--yellow)' }}><Users size={18} /></span>

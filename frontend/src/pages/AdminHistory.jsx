@@ -19,8 +19,18 @@ export default function AdminHistory() {
     load();
   }, []);
 
-  const handleExport = () => {
-    window.location.href = '/api/orders/export/excel';
+  const handleExport = async () => {
+    try {
+      const res = await axios.get('/api/orders/export/excel', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `order-history-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {}
   };
 
   const grouped = {};

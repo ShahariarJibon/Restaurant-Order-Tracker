@@ -14,6 +14,7 @@ const TABS = [
 export default function AdminMobileLayout({ activeTab, onTabChange, children }) {
   const { restaurant } = useAuth();
   const [pendingCount, setPendingCount] = useState(0);
+  const [feedbackCount, setFeedbackCount] = useState(0);
 
   useEffect(() => {
     const check = async () => {
@@ -24,6 +25,18 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
     };
     check();
     const interval = setInterval(check, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const checkFeedback = async () => {
+      try {
+        const res = await axios.get('/api/feedback/admin');
+        setFeedbackCount(res.data.length);
+      } catch {}
+    };
+    checkFeedback();
+    const interval = setInterval(checkFeedback, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -65,7 +78,10 @@ export default function AdminMobileLayout({ activeTab, onTabChange, children }) 
                 Payments
               </button>
               <button className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`} onClick={() => onTabChange('notifications')}>
-                <span className="nav-icon"><MessageSquare size={20} /></span>
+                <span className="nav-icon" style={{ position: 'relative' }}>
+                  <MessageSquare size={20} />
+                  {feedbackCount > 0 && <span className="nav-badge" />}
+                </span>
                 Feedback
               </button>
               <button className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => onTabChange('staff')}>
